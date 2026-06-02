@@ -141,7 +141,7 @@ function mapOperatingToSubjects(
   if (store?.业态 === "餐饮" || (scope === 全部门店值 && getRestaurantStores().length)) {
     const restScope = scope === 全部门店值 ? getRestaurantStores()[0]!.id : scope;
     const r = getRestaurantOperationsKpis(restScope, period, actualOverrides);
-    out["客流量"] = Math.round(r.营业收入 * 100);
+    out["客流量"] = Math.round(r.营业收入 / Math.max(1, r.客单价));
     out["客单价"] = r.客单价;
     out["翻台率"] = 2;
     if (r.营业收入 > 0 && r.毛利率 > 0) {

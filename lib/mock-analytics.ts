@@ -1,6 +1,6 @@
 /**
  * 经营与财务 mock 数据（按门店差异化 + 预算逻辑）
- * 金额单位：万元（演示）
+ * 金额单位：元（演示）
  */
 
 import {
@@ -69,12 +69,12 @@ function budgetFactor(storeId: string, key: string): number {
   return 0.94 + (h % 140) / 1000;
 }
 
-/** 月度营业收入基准（万元）— 体现规模与业务逻辑差异 */
+/** 月度营业收入基准（元）— 体现规模与业务逻辑差异 */
 const 月度营业收入基准: Record<string, number> = {
-  "hotel-mujia-quanji-huaianxi": 178,
-  "hotel-yuhang-quanji-zhongshanxi": 171,
-  "hotel-zetong-xingcheng-zhongshanxi": 132,
-  "rest-xibeifu-sjz": 53
+  "hotel-mujia-quanji-huaianxi": 1780000,
+  "hotel-yuhang-quanji-zhongshanxi": 1710000,
+  "hotel-zetong-xingcheng-zhongshanxi": 1320000,
+  "rest-xibeifu-sjz": 530000
 };
 
 export interface FinancialLineActual {
@@ -94,7 +94,7 @@ export interface FinancialLineActual {
 }
 
 function computeStoreMonthActual(store: StoreMaster): FinancialLineActual {
-  const R = 月度营业收入基准[store.id] ?? 80;
+  const R = 月度营业收入基准[store.id] ?? 800000;
 
   let 客房收入 = 0;
   let 餐饮收入 = 0;
@@ -588,7 +588,7 @@ export function getHotelOperationsKpisForStoreIds(
 
   const scale = periodScale(period);
   const 入住率 = sum.可售间夜 > 0 ? sum.已售间夜 / sum.可售间夜 : 0;
-  const 平均房价 = sum.已售间夜 > 0 ? (sum.客房收入 * 10000) / sum.已售间夜 / 10000 : 0;
+  const 平均房价 = sum.已售间夜 > 0 ? sum.客房收入 / sum.已售间夜 : 0;
   const revpar = sum.可售间夜 > 0 ? sum.客房收入 / sum.可售间夜 : 0;
 
   const fa =
@@ -645,7 +645,7 @@ export function getBudgetHotelOperationsKpisForStoreIds(
   );
 
   const 入住率 = sum.可售间夜 > 0 ? sum.已售间夜 / sum.可售间夜 : 0;
-  const 平均房价 = sum.已售间夜 > 0 ? (sum.客房收入 * 10000) / sum.已售间夜 / 10000 : 0;
+  const 平均房价 = sum.已售间夜 > 0 ? sum.客房收入 / sum.已售间夜 : 0;
   const revpar = sum.可售间夜 > 0 ? sum.客房收入 / sum.可售间夜 : 0;
 
   return {

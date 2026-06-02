@@ -79,6 +79,7 @@ function buildTotalsFromFinancial(
   const revenue = safeNumber(a.营业收入);
   const profit = safeNumber(a.营业利润);
   const totalCost = totalCostFromActual(a);
+  /** 客房收入（元）；字段名 roomRevenueWan 为历史命名 */
   const roomRevenueWan = safeNumber(a.客房收入);
   const hotelCount = resolveEligibleMockStoreIds(mockKpisScope, "hotelBoard").length;
   const kpis = getDashboardKpis(mockKpisScope, period, actualOverrides);
