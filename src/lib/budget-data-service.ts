@@ -248,6 +248,83 @@ export async function getBudgetForScopeFromSupabase(
   return line;
 }
 
+export type BudgetFinancialLinesByPeriodResult = {
+  byPeriod: Record<string, FinancialLineActual>;
+  error: string | null;
+  queriedStoreIds: string[];
+};
+
+/**
+ * 多账期 budget_data → 每月一条 FinancialLineActual（与单月 aggregateBudgetDataRows 口径一致）
+ */
+export async function getBudgetFinancialLinesByPeriodValues(
+  storeScope: ActualDataStoreScope,
+  periodValues: readonly string[],
+  budgetVersion: BudgetVersionValue = DEFAULT_BUDGET_VERSION
+): Promise<BudgetFinancialLinesByPeriodResult> {
+  const uniquePeriods = [...new Set(periodValues.map((p) => p.trim()).filter(Boolean))];
+  if (!uniquePeriods.length) {
+    return { byPeriod: {}, error: null, queriedStoreIds: [] };
+  }
+  if (!hasSupabaseBudgetEnv()) {
+    return { byPeriod: {}, error: "未配置 Supabase 环境变量", queriedStoreIds: [] };
+  }
+
+  const { ids, error: scopeError } = await resolveBudgetQueryStoreIds(storeScope);
+  if (!ids.length) {
+    return { byPeriod: {}, error: scopeError, queriedStoreIds: [] };
+  }
+
+  const version = normalizeBudgetVersion(budgetVersion);
+
+  try {
+    const client = getSupabaseClient();
+    let q = client
+      .from(BUDGET_DATA_TABLE)
+      .select("*")
+      .eq("period_type", "month")
+      .eq("budget_version", version)
+      .in("period_value", uniquePeriods);
+
+    if (ids.length === 1) {
+      q = q.eq("store_id", ids[0]!);
+    } else {
+      q = q.in("store_id", ids);
+    }
+
+    const { data, error } = await q;
+    if (error) {
+      return { byPeriod: {}, error: error.message, queriedStoreIds: ids };
+    }
+
+    const grouped: Record<string, BudgetDataRow[]> = {};
+    for (const raw of data ?? []) {
+      const row = raw as BudgetDataRow;
+      const pv = String(row.period_value ?? "");
+      if (!pv) continue;
+      if (!grouped[pv]) grouped[pv] = [];
+      grouped[pv].push(row);
+    }
+
+    const byPeriod: Record<string, FinancialLineActual> = {};
+    for (const pv of uniquePeriods) {
+      const periodRows = grouped[pv];
+      if (!periodRows?.length) continue;
+      const line = aggregateBudgetDataRows(periodRows);
+      if (line.营业收入 <= 0 && line.营业利润 <= 0 && line.人力成本 <= 0) continue;
+      byPeriod[pv] = line;
+    }
+
+    return { byPeriod, error: null, queriedStoreIds: ids };
+  } catch (e) {
+    return {
+      byPeriod: {},
+      error: e instanceof Error ? e.message : "budget_data 趋势查询异常",
+      queriedStoreIds: ids
+    };
+  }
+}
+
 export type UpsertBudgetDataResult = { ok: true } | { ok: false; error: string };
 
 export async function upsertBudgetData(

@@ -45,8 +45,10 @@ import {
   buildNineActualVsBudgetCards,
   buildVarianceAlerts,
   resolveActualTotals,
-  resolveBudgetTotals
+  resolveBudgetTotals,
+  totalCostFromFinancialLine
 } from "@/lib/actual-vs-budget-kpi";
+import { getBudgetFinancialLinesByPeriodValues } from "@/src/lib/budget-data-service";
 import { buildFullBudgetVariance } from "@/lib/budget-variance";
 import { DATA_CALIBER_RULES } from "@/lib/data-caliber";
 import { checkTrendQuality } from "@/lib/data-quality";
@@ -307,24 +309,89 @@ export default function FinancialReportsPage() {
     };
   }, [useDbActual, hasActualDataEnv, reportPeriod, reportFilter]);
 
-  const trendData = useMemo(() => {
+  const trendPeriodValues = useMemo(() => {
     if (useDbActual && trendActualFromDb?.length) {
-      const budgetByPeriod = new Map(mockTrendData.map((row) => [row.周期, row]));
-      return trendActualFromDb.map((point) => {
-        const budgetRow = budgetByPeriod.get(point.周期);
-        return {
-          周期: point.周期,
-          实际收入: point.收入,
-          实际成本: point.成本,
-          实际利润: point.利润,
-          预算收入: budgetRow?.预算收入 ?? 0,
-          预算成本: budgetRow?.预算成本 ?? 0,
-          预算利润: budgetRow?.预算利润 ?? 0
-        };
-      });
+      return trendActualFromDb.map((p) => p.周期);
     }
-    return mockTrendData;
+    return mockTrendData.map((r) => r.周期);
   }, [useDbActual, trendActualFromDb, mockTrendData]);
+
+  const [trendBudgetFromDb, setTrendBudgetFromDb] = useState<Record<string, FinancialLineActual> | null>(
+    null
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setTrendBudgetFromDb(null);
+    if (!useDbBudget || !hasBudgetEnv || budgetScopeResolution.mode === "invalid") return;
+    if (!trendPeriodValues.length) return;
+
+    getBudgetFinancialLinesByPeriodValues(
+      budgetScopeResolution.queryScope,
+      trendPeriodValues,
+      reportFilter.budgetVersion
+    )
+      .then(({ byPeriod, error }) => {
+        if (cancelled) return;
+        if (error || Object.keys(byPeriod).length === 0) {
+          setTrendBudgetFromDb(null);
+          return;
+        }
+        setTrendBudgetFromDb(byPeriod);
+      })
+      .catch(() => {
+        if (!cancelled) setTrendBudgetFromDb(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    useDbBudget,
+    hasBudgetEnv,
+    budgetScopeResolution,
+    trendPeriodValues,
+    reportFilter.budgetVersion
+  ]);
+
+  const trendData = useMemo(() => {
+    const mockBudgetByPeriod = new Map(mockTrendData.map((row) => [row.周期, row]));
+
+    const resolveBudgetFields = (period: string) => {
+      const dbLine = useDbBudget ? trendBudgetFromDb?.[period] : undefined;
+      if (dbLine) {
+        return {
+          预算收入: dbLine.营业收入,
+          预算成本: totalCostFromFinancialLine(dbLine),
+          预算利润: dbLine.营业利润
+        };
+      }
+      const mockRow = mockBudgetByPeriod.get(period);
+      return {
+        预算收入: mockRow?.预算收入 ?? 0,
+        预算成本: mockRow?.预算成本 ?? 0,
+        预算利润: mockRow?.预算利润 ?? 0
+      };
+    };
+
+    if (useDbActual && trendActualFromDb?.length) {
+      return trendActualFromDb.map((point) => ({
+        周期: point.周期,
+        实际收入: point.收入,
+        实际成本: point.成本,
+        实际利润: point.利润,
+        ...resolveBudgetFields(point.周期)
+      }));
+    }
+
+    return mockTrendData.map((row) => ({
+      周期: row.周期,
+      实际收入: row.实际收入,
+      实际成本: row.实际成本,
+      实际利润: row.实际利润,
+      ...resolveBudgetFields(row.周期)
+    }));
+  }, [useDbActual, trendActualFromDb, mockTrendData, useDbBudget, trendBudgetFromDb]);
 
   const qualityIssues = useMemo(
     () => checkTrendQuality(trendData as Array<Record<string, unknown>>, chartMetric),
