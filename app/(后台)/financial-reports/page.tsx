@@ -26,7 +26,12 @@ import {
   type OperatingReportLine
 } from "@/lib/actual-data-subject-bridge";
 import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-context";
-import type { ActualDataStoreScope } from "@/src/lib/dashboard-data-service";
+import {
+  getTrendSeriesFromSupabase,
+  type ActualDataStoreScope,
+  type BoardTypeFilter,
+  type DashboardTrendPoint
+} from "@/src/lib/dashboard-data-service";
 import { formatStoreOptionLabel, type StoreListItem } from "@/src/lib/supabase";
 import {
   getActualAggregatedByStoreIds,
@@ -70,6 +75,22 @@ import {
 } from "@/lib/financial-report-filter";
 import { getHotelStores, getRestaurantStores, 门店主数据, 全部门店值 } from "@/lib/store-master";
 import { useActiveStores } from "@/contexts/active-stores-context";
+
+function resolveFinancialReportTrendQuery(filter: FinancialReportFilter): {
+  storeId: string;
+  boardType: BoardTypeFilter;
+} {
+  if (filter.reportScope === "single" && filter.storeId) {
+    return { storeId: filter.storeId, boardType: "all" };
+  }
+  if (filter.reportScope === "hotelBoard") {
+    return { storeId: 全部门店值, boardType: "hotelBoard" };
+  }
+  if (filter.reportScope === "restaurantBoard") {
+    return { storeId: 全部门店值, boardType: "restaurantBoard" };
+  }
+  return { storeId: 全部门店值, boardType: "all" };
+}
 
 /** Supabase 门店 → 本地 mock id（仅用于演示利润表 mock，不用于 actual_data 查询） */
 function mockIdForSupabaseStore(store: StoreListItem): string {
@@ -215,7 +236,7 @@ export default function FinancialReportsPage() {
     return { 实际: actual, 预算: budget, 差异, 差异率 };
   }, [actual, budget]);
 
-  const trendData = useMemo(() => {
+  const mockTrendData = useMemo(() => {
     const end = reportPeriodToDbPeriod({ 粒度: "month", 年: reportFilter.year, 月: reportFilter.month });
     const periods =
       reportFilter.reportScope === "single" && reportFilter.storeId
@@ -262,6 +283,48 @@ export default function FinancialReportsPage() {
     reportFilter.budgetVersion,
     supabaseStores
   ]);
+
+  const [trendActualFromDb, setTrendActualFromDb] = useState<DashboardTrendPoint[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setTrendActualFromDb(null);
+    if (!useDbActual || !hasActualDataEnv) return;
+
+    const { storeId, boardType } = resolveFinancialReportTrendQuery(reportFilter);
+    if (reportFilter.reportScope === "single" && !reportFilter.storeId) return;
+
+    getTrendSeriesFromSupabase(storeId, boardType, reportPeriod)
+      .then((list) => {
+        if (!cancelled) setTrendActualFromDb(list && list.length > 0 ? list : null);
+      })
+      .catch(() => {
+        if (!cancelled) setTrendActualFromDb(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [useDbActual, hasActualDataEnv, reportPeriod, reportFilter]);
+
+  const trendData = useMemo(() => {
+    if (useDbActual && trendActualFromDb?.length) {
+      const budgetByPeriod = new Map(mockTrendData.map((row) => [row.周期, row]));
+      return trendActualFromDb.map((point) => {
+        const budgetRow = budgetByPeriod.get(point.周期);
+        return {
+          周期: point.周期,
+          实际收入: point.收入,
+          实际成本: point.成本,
+          实际利润: point.利润,
+          预算收入: budgetRow?.预算收入 ?? 0,
+          预算成本: budgetRow?.预算成本 ?? 0,
+          预算利润: budgetRow?.预算利润 ?? 0
+        };
+      });
+    }
+    return mockTrendData;
+  }, [useDbActual, trendActualFromDb, mockTrendData]);
 
   const qualityIssues = useMemo(
     () => checkTrendQuality(trendData as Array<Record<string, unknown>>, chartMetric),
