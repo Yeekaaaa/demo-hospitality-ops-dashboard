@@ -56,7 +56,7 @@ function validateAssetColumns(
     if (cell === "") {
       continue;
     }
-    if (col.kind === "wan") {
+    if (col.kind === "yuan" || col.kind === "wan") {
       const n = parseOptionalNumber(cell, col.headerZh);
       if (!n.ok) errors.push(n.error);
       else if (n.value !== "") {

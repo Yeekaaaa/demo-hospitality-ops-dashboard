@@ -31,7 +31,7 @@ const RATIO_DB_KEYS = new Set(
 const SUM_DB_KEYS = new Set<string>([
   ...Object.values(OPERATING_BASE_BUSINESS_DB_MAP),
   ...OPERATING_DATA_EXTENSION_IMPORT_COLUMNS.filter(
-    (c) => c.kind === "wan" || c.kind === "count" || c.kind === "integer"
+    (c) => c.kind === "yuan" || c.kind === "wan" || c.kind === "count" || c.kind === "integer"
   ).map((c) => c.dbKey)
 ]);
 
@@ -225,9 +225,9 @@ function unitForHeader(header: string): string {
   if (!dbKey) return "";
   const ext = OPERATING_DATA_EXTENSION_IMPORT_COLUMNS.find((c) => c.dbKey === dbKey);
   const kind: AssetImportFieldKind | "integer" =
-    ext?.kind ?? (header === "可售房晚" || header === "已售房晚" ? "integer" : "wan");
+    ext?.kind ?? (header === "可售房晚" || header === "已售房晚" ? "integer" : "yuan");
   if (kind === "ratio_or_percent") return "%";
-  if (kind === "wan") return "万元";
+  if (kind === "yuan" || kind === "wan") return "元";
   if (kind === "integer") return "间夜/间";
   if (kind === "count") return "次/条";
   return "";

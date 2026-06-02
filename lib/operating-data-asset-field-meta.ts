@@ -6,7 +6,7 @@
  * - OPERATING_DATA_CALCULATED_FIELD_ROWS：仅「字段说明」sheet，系统计算项
  */
 
-export type AssetImportFieldKind = "ratio_or_percent" | "wan" | "count" | "integer";
+export type AssetImportFieldKind = "ratio_or_percent" | "yuan" | "wan" | "count" | "integer";
 
 export type AssetFieldDescriptionGroup =
   | "经营结果"
@@ -27,7 +27,10 @@ export type AssetImportColumnMeta = {
 
 export const RATIO_IMPORT_HELP_TEXT = "可填写 31% 或 0.31，系统导入时统一转为 0–1 小数。";
 
-export const WAN_IMPORT_HELP_TEXT = "单位为万元，留空则不写入。";
+export const YUAN_IMPORT_HELP_TEXT = "单位为元，留空则不写入。";
+
+/** @deprecated 使用 YUAN_IMPORT_HELP_TEXT；保留供旧模板 kind 兼容 */
+export const WAN_IMPORT_HELP_TEXT = YUAN_IMPORT_HELP_TEXT;
 
 export const COUNT_IMPORT_HELP_TEXT = "填写非负整数，留空则不写入。";
 
@@ -50,9 +53,9 @@ const CHANNEL_DIRECT_HELP =
 
 /** 新模板输入列（顺序与「数据模板」表头一致，接在 9 个基础列之后） */
 export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumnMeta[] = [
-  { headerZh: "营业成本", dbKey: "business_cost", kind: "wan", fieldGroup: "经营结果" },
-  { headerZh: "运营成本", dbKey: "operating_cost", kind: "wan", fieldGroup: "经营结果" },
-  { headerZh: "运营利润", dbKey: "operating_profit", kind: "wan", fieldGroup: "经营结果" },
+  { headerZh: "营业成本", dbKey: "business_cost", kind: "yuan", fieldGroup: "经营结果" },
+  { headerZh: "运营成本", dbKey: "operating_cost", kind: "yuan", fieldGroup: "经营结果" },
+  { headerZh: "运营利润", dbKey: "operating_profit", kind: "yuan", fieldGroup: "经营结果" },
   { headerZh: "时租房间数", dbKey: "hourly_rooms_sold", kind: "integer", fieldGroup: "酒店房量指标" },
   { headerZh: "过夜房间数", dbKey: "overnight_rooms_sold", kind: "integer", fieldGroup: "酒店房量指标" },
   {
@@ -90,21 +93,21 @@ export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumn
     fieldGroup: "渠道结构",
     fillHelp: CHANNEL_DIRECT_HELP
   },
-  { headerZh: "销售费用", dbKey: "sales_expense", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "非客房服务成本", dbKey: "non_room_service_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "客房服务成本", dbKey: "room_service_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "华住管理费", dbKey: "huazhu_management_fee", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "房租", dbKey: "rent", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "税金及附加", dbKey: "tax_and_surcharge", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "员工奖金", dbKey: "staff_bonus", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "后勤奖金", dbKey: "back_office_bonus", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "店长奖金", dbKey: "manager_bonus", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "装修及固定资产摊销", dbKey: "depreciation_amortization", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "其他业务收入", dbKey: "other_business_income", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "管理费用", dbKey: "management_expense", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "营业外收入", dbKey: "non_operating_income", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "净利润", dbKey: "net_profit", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "摊销后纯利润", dbKey: "profit_after_amortization", kind: "wan", fieldGroup: "利润与现金流" },
+  { headerZh: "销售费用", dbKey: "sales_expense", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "非客房服务成本", dbKey: "non_room_service_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "客房服务成本", dbKey: "room_service_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "华住管理费", dbKey: "huazhu_management_fee", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "房租", dbKey: "rent", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "税金及附加", dbKey: "tax_and_surcharge", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "员工奖金", dbKey: "staff_bonus", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "后勤奖金", dbKey: "back_office_bonus", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "店长奖金", dbKey: "manager_bonus", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "装修及固定资产摊销", dbKey: "depreciation_amortization", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "其他业务收入", dbKey: "other_business_income", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "管理费用", dbKey: "management_expense", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "营业外收入", dbKey: "non_operating_income", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "净利润", dbKey: "net_profit", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "摊销后纯利润", dbKey: "profit_after_amortization", kind: "yuan", fieldGroup: "利润与现金流" },
   { headerZh: "差评数", dbKey: "negative_review_count", kind: "count", fieldGroup: "运营风险" },
   { headerZh: "投诉数", dbKey: "complaint_count", kind: "count", fieldGroup: "运营风险" },
   { headerZh: "异常维修数", dbKey: "abnormal_repair_count", kind: "count", fieldGroup: "运营风险" },
@@ -114,23 +117,23 @@ export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumn
 
 /** 旧版模板扩展列：仍支持上传解析与入库，不进入新下载模板 */
 export const OPERATING_DATA_LEGACY_IMPORT_COLUMNS: readonly AssetImportColumnMeta[] = [
-  { headerZh: "人工成本", dbKey: "labor_cost", kind: "wan", fieldGroup: "成本结构" },
+  { headerZh: "人工成本", dbKey: "labor_cost", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "人工成本率", dbKey: "labor_cost_ratio", kind: "ratio_or_percent", fieldGroup: "成本结构" },
-  { headerZh: "能耗成本", dbKey: "energy_cost", kind: "wan", fieldGroup: "成本结构" },
+  { headerZh: "能耗成本", dbKey: "energy_cost", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "能耗成本率", dbKey: "energy_cost_ratio", kind: "ratio_or_percent", fieldGroup: "成本结构" },
-  { headerZh: "早餐成本", dbKey: "breakfast_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "洗涤成本", dbKey: "laundry_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "易耗品成本", dbKey: "consumable_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "维修成本", dbKey: "repair_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "营销费用", dbKey: "marketing_cost", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "品牌管理费", dbKey: "brand_fee", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "中央预订及会员费", dbKey: "reservation_member_fee", kind: "wan", fieldGroup: "成本结构" },
-  { headerZh: "GOP", dbKey: "gop", kind: "wan", fieldGroup: "利润与现金流" },
+  { headerZh: "早餐成本", dbKey: "breakfast_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "洗涤成本", dbKey: "laundry_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "易耗品成本", dbKey: "consumable_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "维修成本", dbKey: "repair_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "营销费用", dbKey: "marketing_cost", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "品牌管理费", dbKey: "brand_fee", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "中央预订及会员费", dbKey: "reservation_member_fee", kind: "yuan", fieldGroup: "成本结构" },
+  { headerZh: "GOP", dbKey: "gop", kind: "yuan", fieldGroup: "利润与现金流" },
   { headerZh: "GOP率", dbKey: "gop_margin", kind: "ratio_or_percent", fieldGroup: "利润与现金流" },
-  { headerZh: "NOI", dbKey: "noi", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "经营现金流", dbKey: "operating_cash_flow", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "资本开支", dbKey: "capex", kind: "wan", fieldGroup: "利润与现金流" },
-  { headerZh: "净现金流", dbKey: "net_cash_flow", kind: "wan", fieldGroup: "利润与现金流" }
+  { headerZh: "NOI", dbKey: "noi", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "经营现金流", dbKey: "operating_cash_flow", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "资本开支", dbKey: "capex", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "净现金流", dbKey: "net_cash_flow", kind: "yuan", fieldGroup: "利润与现金流" }
 ] as const;
 
 /** 解析 / upsert 用：新列 + 旧列（旧 Excel 仍可导入） */
@@ -167,7 +170,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "经营结果",
     headerZh: "营业成本单间成本",
-    formula: "营业成本（万元）× 10000 ÷ 已售房晚（元/间夜）"
+    formula: "营业成本（元）÷ 可售间夜（元/间夜）"
   },
   {
     fieldGroup: "经营结果",
@@ -182,7 +185,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "经营结果",
     headerZh: "运营利润单间利润",
-    formula: "运营利润（万元）× 10000 ÷ 已售房晚（元/间夜）"
+    formula: "运营利润（元）÷ 可售间夜（元/间夜）"
   },
   { fieldGroup: "酒店房量指标", headerZh: "出租率", formula: "已售房晚 ÷ 可售房晚 × 100%" },
   {
@@ -198,7 +201,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "酒店房量指标",
     headerZh: "平均房价",
-    formula: "ADR = 客房收入（万元）× 10000 ÷ 已售房晚（元/间夜）"
+    formula: "ADR = 客房收入（元）÷ 已售房晚（元/间夜）"
   },
   {
     fieldGroup: "酒店房量指标",
@@ -209,12 +212,12 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "酒店房量指标",
     headerZh: "综合 RevPAR",
-    formula: "营业收入（万元）× 10000 ÷ 可售房晚（元/间夜）"
+    formula: "营业收入（元）÷ 可售间夜（元/间夜）"
   },
   {
     fieldGroup: "酒店房量指标",
     headerZh: "客房 RevPAR",
-    formula: "客房收入（万元）× 10000 ÷ 已售房晚（元/间夜）"
+    formula: "客房收入（元）÷ 可售间夜（元/间夜）"
   },
   {
     fieldGroup: "成本结构",
@@ -224,7 +227,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "成本结构",
     headerZh: "销售费用单间成本",
-    formula: "销售费用（万元）× 10000 ÷ 已售房晚"
+    formula: "销售费用（元）÷ 可售间夜"
   },
   {
     fieldGroup: "成本结构",
@@ -239,7 +242,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "成本结构",
     headerZh: "客房服务单间成本",
-    formula: "客房服务成本（万元）× 10000 ÷ 已售房晚"
+    formula: "客房服务成本（元）÷ 可售间夜"
   },
   {
     fieldGroup: "成本结构",
@@ -249,13 +252,13 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "成本结构",
     headerZh: "华住管理费单间成本",
-    formula: "华住管理费（万元）× 10000 ÷ 已售房晚"
+    formula: "华住管理费（元）÷ 可售间夜"
   },
   { fieldGroup: "成本结构", headerZh: "房租占比", formula: "房租 ÷ 营业收入 × 100%" },
   {
     fieldGroup: "成本结构",
     headerZh: "房租单间成本",
-    formula: "房租（万元）× 10000 ÷ 已售房晚"
+    formula: "房租（元）÷ 可售间夜"
   },
   {
     fieldGroup: "成本结构",
@@ -265,7 +268,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "成本结构",
     headerZh: "税金及附加单间成本",
-    formula: "税金及附加（万元）× 10000 ÷ 已售房晚"
+    formula: "税金及附加（元）÷ 可售间夜"
   },
   {
     fieldGroup: "成本结构",
@@ -275,7 +278,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "成本结构",
     headerZh: "奖金单间房成本",
-    formula: "员工奖金（万元）× 10000 ÷ 已售房晚"
+    formula: "员工奖金（元）÷ 可售间夜"
   },
   {
     fieldGroup: "成本结构",
@@ -295,12 +298,12 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "成本结构",
     headerZh: "单间摊销成本",
-    formula: "装修及固定资产摊销（万元）× 10000 ÷ 已售房晚"
+    formula: "装修及固定资产摊销（元）÷ 可售间夜"
   },
   {
     fieldGroup: "利润与现金流",
     headerZh: "运营毛利单间利润",
-    formula: "运营毛利（万元）× 10000 ÷ 已售房晚；当前无「运营毛利」分列字段，待扩展后自动计算（未来可扩展）"
+    formula: "运营毛利（元）÷ 可售间夜；当前无「运营毛利」分列字段，待扩展后自动计算（未来可扩展）"
   },
   {
     fieldGroup: "利润与现金流",
@@ -310,7 +313,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "利润与现金流",
     headerZh: "管理费用单间成本",
-    formula: "管理费用（万元）× 10000 ÷ 已售房晚"
+    formula: "管理费用（元）÷ 可售间夜"
   },
   {
     fieldGroup: "利润与现金流",
@@ -320,7 +323,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "利润与现金流",
     headerZh: "净利润单间利润",
-    formula: "净利润（万元）× 10000 ÷ 已售房晚"
+    formula: "净利润（元）÷ 可售间夜"
   },
   {
     fieldGroup: "利润与现金流",
@@ -330,7 +333,7 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   {
     fieldGroup: "利润与现金流",
     headerZh: "摊销后纯利润单间",
-    formula: "摊销后纯利润（万元）× 10000 ÷ 已售房晚"
+    formula: "摊销后纯利润（元）÷ 可售间夜"
   }
 ] as const;
 
@@ -339,16 +342,16 @@ function assetColumnToDescriptionRow(c: AssetImportColumnMeta): string[] {
     c.fillHelp ??
     (c.kind === "ratio_or_percent"
       ? RATIO_IMPORT_HELP_TEXT
-      : c.kind === "wan"
-        ? WAN_IMPORT_HELP_TEXT
+      : c.kind === "yuan" || c.kind === "wan"
+        ? YUAN_IMPORT_HELP_TEXT
         : c.kind === "integer"
           ? INTEGER_IMPORT_HELP_TEXT
           : COUNT_IMPORT_HELP_TEXT);
   const unit =
     c.kind === "ratio_or_percent"
       ? "31% 或 0.31，导入为 0–1"
-      : c.kind === "wan"
-        ? "万元"
+      : c.kind === "yuan" || c.kind === "wan"
+        ? "元"
         : c.kind === "integer"
           ? "非负整数"
           : "非负整数";

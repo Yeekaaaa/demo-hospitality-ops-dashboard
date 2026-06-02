@@ -74,9 +74,9 @@ export function kindForOperatingDbKey(dbKey: string): AssetImportFieldKind | "me
       "operating_profit"
     ].includes(dbKey)
   ) {
-    return "wan";
+    return "yuan";
   }
-  return "wan";
+  return "yuan";
 }
 
 export function fieldGroupForDbKey(dbKey: string): AssetFieldDescriptionGroup | "基础信息" {

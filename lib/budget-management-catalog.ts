@@ -28,8 +28,8 @@ function pick(label: string, patch?: Partial<BudgetSubjectDefinition>): BudgetSu
   return {
     label,
     group: G.成本,
-    unit: "万元",
-    kind: "wan",
+    unit: "元",
+    kind: "yuan",
     direction: "cost",
     description: patch?.description ?? label,
     ...patch
@@ -54,8 +54,8 @@ export function getBudgetManagementSubjectCatalog(): readonly BudgetSubjectDefin
     defCore(
       BUDGET_CORE_LABELS.revenue,
       G.收入,
-      "万元",
-      "wan",
+      "元",
+      "yuan",
       "revenue",
       "门店预算总收入目标（写入 budget_data.revenue_budget）。",
       ["营业收入", "总营业收入"]
@@ -69,8 +69,8 @@ export function getBudgetManagementSubjectCatalog(): readonly BudgetSubjectDefin
     defCore(
       BUDGET_CORE_LABELS.cost,
       G.成本,
-      "万元",
-      "wan",
+      "元",
+      "yuan",
       "cost",
       "门店预算总营业成本（写入 budget_data.cost_budget）。",
       ["总成本", "营业成本", "运营成本"]
@@ -101,7 +101,7 @@ export function getBudgetManagementSubjectCatalog(): readonly BudgetSubjectDefin
       group: G.成本,
       legacyKeys: ["销售费用", "市场推广费", "营销成本"]
     }),
-    defCore("其他成本", G.成本, "万元", "wan", "cost", "其他未单独列示的成本预算。"),
+    defCore("其他成本", G.成本, "元", "yuan", "cost", "其他未单独列示的成本预算。"),
 
     pick("可售房间数", { group: G.酒店, direction: "operating_high" }),
     pick("已售房间数", { group: G.酒店, direction: "operating_high" }),
@@ -124,8 +124,8 @@ export function getBudgetManagementSubjectCatalog(): readonly BudgetSubjectDefin
     defCore(
       BUDGET_CORE_LABELS.profit,
       G.利润,
-      "万元",
-      "wan",
+      "元",
+      "yuan",
       "profit",
       "经营利润预算目标（写入 budget_data.profit_budget）。",
       ["营业利润", "运营利润", "利润", "净利润"]

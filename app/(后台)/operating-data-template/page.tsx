@@ -144,7 +144,7 @@ export default function OperatingDataTemplatePage() {
         <CardHeader>
           <CardTitle className="text-base">下载模板</CardTitle>
           <p className="text-sm text-muted-foreground">
-            表头在原有「门店、账期、收入、成本、利润、房晚、客房收入」基础上，追加酒店资产管理扩展字段（渠道结构、成本拆解、GOP/NOI/现金流、风险与运营质量等）。金额列单位为万元；占比为
+            表头在原有「门店、账期、收入、成本、利润、房晚、客房收入」基础上，追加酒店资产管理扩展字段（渠道结构、成本拆解、GOP/NOI/现金流、风险与运营质量等）。金额列单位为元；占比为
             0–1 小数或百分数。
           </p>
         </CardHeader>
@@ -253,7 +253,7 @@ export default function OperatingDataTemplatePage() {
                           typeof v === "number" && Number.isFinite(v)
                             ? c.kind === "count" || c.kind === "integer"
                               ? String(v)
-                              : c.kind === "wan"
+                              : c.kind === "yuan" || c.kind === "wan"
                                 ? v.toLocaleString("zh-CN", { maximumFractionDigits: 2 })
                                 : `${(v * 100).toFixed(1)}%`
                             : "—";

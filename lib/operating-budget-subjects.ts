@@ -95,7 +95,7 @@ function unitForHeader(header: string): { unit: string; kind: BudgetSubjectDefin
   if (ext?.kind === "integer" || header === "可售房晚" || header === "已售房晚") {
     return { unit: "间夜", kind: "count" };
   }
-  return { unit: "万元", kind: "wan" };
+  return { unit: "元", kind: "yuan" };
 }
 
 /** 仅包含经营模板有、且标准 73 科目中尚未覆盖的科目 */
