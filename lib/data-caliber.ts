@@ -7,6 +7,8 @@
  *
  * 冻结要点：
  * - actual_data = 实际经营结果；budget_data = 预算目标
+ * - actual_data / budget_data 金额列底层单位均为「元」（非万元）
+ * - 页面大额展示可 formatWan(yuan) 转为「万元」，仅展示层 ÷ 10000
  * - budget_overrides = 本地演示 fallback，不覆盖 actual_data
  * - 经营 Excel 只写 actual_data；预算管理只写 budget_data
  */
@@ -24,11 +26,12 @@ export const BUDGET_DATA_TABLE = "budget_data" as const;
 export const BUDGET_DATA_STORAGE_KEY = "fengtin_budget_overrides_v2" as const;
 
 export const DATA_CALIBER_RULES = {
-  operatingImportTarget: "仅写入 actual_data，表示实际经营结果",
+  amountStorageUnit: "actual_data / budget_data 金额字段底层单位为元；UI 可展示为万元（formatWan 等）",
+  operatingImportTarget: "仅写入 actual_data，表示实际经营结果；导入模板金额单位为元",
   budgetManagementTarget: "优先写入 Supabase budget_data；无环境时写入 budget_overrides",
   noBudgetInActualData: "禁止将预算科目或预算版本写入 actual_data",
-  actualDataMeaning: "actual_data = 实际经营结果",
-  budgetDataMeaning: "budget_data = 预算目标（计划）",
+  actualDataMeaning: "actual_data = 实际经营结果（金额列：元）",
+  budgetDataMeaning: "budget_data = 预算目标（计划，金额列：元）",
   budgetOverridesMeaning: "budget_overrides = 本地演示 fallback，不得覆盖 actual_data",
   bossBudgetCore:
     "总营业收入 / 总营业成本 / 经营利润 = 老板核心财务口径；可售房间数 / 已售房间数 / ADR / RevPAR = 酒店运营口径",
