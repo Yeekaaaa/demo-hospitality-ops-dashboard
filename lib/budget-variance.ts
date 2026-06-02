@@ -2,10 +2,15 @@
  * 预算 vs 实际：完整科目差异、状态与管理话术
  */
 
+import { filterActiveMockStores } from "@/lib/active-store-scope";
 import {
   getActualAggregated,
+  getActualAggregatedByStoreIds,
+  getBudgetAggregatedByStoreIds,
   getBudgetForScope,
+  getBudgetHotelOperationsKpisForStoreIds,
   getHotelOperationsKpis,
+  getHotelOperationsKpisForStoreIds,
   getRestaurantOperationsKpis,
   type FinancialLineActual,
   type ReportPeriod
@@ -21,7 +26,7 @@ import {
 import { getFullBudgetSubjectCatalog } from "@/lib/operating-budget-subjects";
 import { getStoreById, getHotelStores, getRestaurantStores, 全部门店值 } from "@/lib/store-master";
 import { reportPeriodToDbPeriod } from "@/lib/dashboard-metrics";
-import { trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
+import { isStoreOpenInPeriod, trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
 
 export type BudgetVarianceStatus = "达标" | "未达标" | "受控" | "超支" | "低于预算" | "风险" | "—";
 
@@ -340,6 +345,26 @@ const TREND_METRIC_SUBJECT: Record<BudgetTrendMetric, string> = {
   ADR: "ADR 平均房价"
 };
 
+function financialLineOperatingCost(f: FinancialLineActual): number {
+  return (
+    f.人力成本 +
+    f.能源费用 +
+    f.华住管理费 +
+    f.客房服务成本 +
+    f.非客房服务成本 +
+    f.原材料成本
+  );
+}
+
+function hotelTrendMetricValue(
+  metric: BudgetTrendMetric,
+  kpi: { 入住率: number; revpar: number; 平均房价: number }
+): number {
+  if (metric === "出租率") return kpi.入住率 * 100;
+  if (metric === "RevPAR") return kpi.revpar;
+  return kpi.平均房价;
+}
+
 export function getBudgetTrendSeries(
   scope: typeof 全部门店值 | string,
   year: number,
@@ -350,43 +375,80 @@ export function getBudgetTrendSeries(
   budgetVersion: BudgetVersionValue = DEFAULT_BUDGET_VERSION
 ) {
   const end = reportPeriodToDbPeriod({ 粒度: "month", 年: year, 月: 6 });
+  const storeRefs =
+    scope === 全部门店值
+      ? filterActiveMockStores().map((s) => ({ store_id: s.id, store_name: s.显示名称 }))
+      : [{ store_id: scope, store_name: getStoreById(scope)?.显示名称 }];
   const periods =
     scope === 全部门店值
-      ? trendPeriodsForAllStores(
-          end,
-          [...getHotelStores(), ...getRestaurantStores()].map((s) => ({ store_id: s.id, store_name: s.显示名称 })),
-          6
-        )
+      ? trendPeriodsForAllStores(end, storeRefs, 6)
       : trendPeriodsForSingleStore(end, scope, getStoreById(scope)?.显示名称, 6);
   const subject = TREND_METRIC_SUBJECT[metric];
-  return periods.map((dbp) => {
-    const mm = Number(dbp.period_value.slice(-2));
-    const p: ReportPeriod = { 粒度: "month", 年: year, 月: mm };
-    const monthSubjects = actualDataSubjectsByMonth?.[mm];
-    const full = buildFullBudgetVariance(
-      scope,
-      p,
-      overrides,
-      actualOverrides,
-      monthSubjects,
-      budgetVersion
-    );
-    const row = full.rows.find((r) => r.label === subject);
-    const actual = row?.actual ?? 0;
-    const budget = row?.budget ?? 0;
-    return {
-      周期: dbp.period_value,
-      month: dbp.period_value,
-      实际收入: actual,
-      预算收入: budget,
-      实际成本: actual,
-      预算成本: budget,
-      实际利润: actual,
-      预算利润: budget,
-      actual,
-      budget
-    };
-  });
+  return periods
+    .map((dbp) => {
+      const openIds = storeRefs
+        .filter((s) => isStoreOpenInPeriod(s.store_id, s.store_name, dbp.period_value))
+        .map((s) => s.store_id);
+      if (!openIds.length) return null;
+
+      const mm = Number(dbp.period_value.slice(-2));
+      const p: ReportPeriod = { 粒度: "month", 年: year, 月: mm };
+      const monthSubjects = actualDataSubjectsByMonth?.[mm];
+
+      let actual: number;
+      let budget: number;
+
+      if (metric === "收入" || metric === "成本" || metric === "利润") {
+        const aFin = getActualAggregatedByStoreIds(openIds, p, actualOverrides);
+        const bFin = getBudgetAggregatedByStoreIds(openIds, p, overrides, budgetVersion);
+        if (metric === "收入") {
+          actual = aFin.营业收入;
+          budget = bFin.营业收入;
+        } else if (metric === "成本") {
+          actual = financialLineOperatingCost(aFin);
+          budget = financialLineOperatingCost(bFin);
+        } else {
+          actual = aFin.营业利润;
+          budget = bFin.营业利润;
+        }
+      } else {
+        const hotelIds = openIds.filter((id) => getStoreById(id)?.业态 === "酒店");
+        if (!hotelIds.length) return null;
+        if (hotelIds.length === 1 && openIds.length === 1) {
+          const full = buildFullBudgetVariance(
+            hotelIds[0]!,
+            p,
+            overrides,
+            actualOverrides,
+            monthSubjects,
+            budgetVersion
+          );
+          const row = full.rows.find((r) => r.label === subject);
+          actual = row?.actual ?? 0;
+          budget = row?.budget ?? 0;
+        } else {
+          const actualKpi = getHotelOperationsKpisForStoreIds(hotelIds, p, actualOverrides);
+          const budgetKpi = getBudgetHotelOperationsKpisForStoreIds(hotelIds, p, overrides, budgetVersion);
+          if (!actualKpi || !budgetKpi) return null;
+          actual = hotelTrendMetricValue(metric, actualKpi);
+          budget = hotelTrendMetricValue(metric, budgetKpi);
+        }
+      }
+
+      return {
+        周期: dbp.period_value,
+        month: dbp.period_value,
+        实际收入: actual,
+        预算收入: budget,
+        实际成本: actual,
+        预算成本: budget,
+        实际利润: actual,
+        预算利润: budget,
+        actual,
+        budget
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row != null);
 }
 
 export function isRowAbnormal(row: BudgetVarianceRow): boolean {

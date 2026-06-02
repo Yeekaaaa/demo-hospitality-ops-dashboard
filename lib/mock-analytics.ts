@@ -13,7 +13,7 @@ import {
 } from "@/lib/store-master";
 import { filterActiveMockStores } from "@/lib/active-store-scope";
 import { dbPeriodToReportPeriod, reportPeriodToDbPeriod } from "@/lib/dashboard-metrics";
-import { trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
+import { isStoreOpenInPeriod, trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
 import { DEFAULT_BUDGET_VERSION, type BudgetVersionValue } from "@/lib/budget-versions";
 import { buildFullBudgetVariance } from "@/lib/budget-variance";
 import {
@@ -447,6 +447,17 @@ export function formatPct(n: number): string {
   return `${(n * 100).toFixed(1)}%`;
 }
 
+function financialLineOperatingCost(f: FinancialLineActual): number {
+  return (
+    f.人力成本 +
+    f.能源费用 +
+    f.华住管理费 +
+    f.客房服务成本 +
+    f.非客房服务成本 +
+    f.原材料成本
+  );
+}
+
 /** 趋势：从门店开业账期起算，不补 0，不强行凑满 6 期 */
 export function getTrendSeries(
   scope: typeof 全部门店值 | string,
@@ -454,45 +465,40 @@ export function getTrendSeries(
   actualOverrides?: ActualOverrideMap
 ) {
   const currentDb = reportPeriodToDbPeriod(演示账期);
+  const storeRefs =
+    scope === 全部门店值
+      ? filterActiveMockStores().map((s) => ({ store_id: s.id, store_name: s.显示名称 }))
+      : [{ store_id: scope, store_name: getStoreById(scope)?.显示名称 }];
   const periods =
     scope === 全部门店值
-      ? trendPeriodsForAllStores(
-          currentDb,
-          filterActiveMockStores().map((s) => ({ store_id: s.id, store_name: s.显示名称 })),
-          6
-        )
+      ? trendPeriodsForAllStores(currentDb, storeRefs, 6)
       : trendPeriodsForSingleStore(
           currentDb,
           scope,
           getStoreById(scope)?.显示名称,
           6
         );
-  return periods.map((dbp) => {
-    const p = dbPeriodToReportPeriod(dbp);
-    const a = getActualAggregated(scope, p, actualOverrides);
-    const b = getBudgetForScope(scope, p, overrides);
-    return {
-      周期: dbp.period_value,
-      实际收入: a.营业收入,
-      预算收入: b.营业收入,
-      实际成本:
-        a.人力成本 +
-        a.能源费用 +
-        a.华住管理费 +
-        a.客房服务成本 +
-        a.非客房服务成本 +
-        a.原材料成本,
-      预算成本:
-        b.人力成本 +
-        b.能源费用 +
-        b.华住管理费 +
-        b.客房服务成本 +
-        b.非客房服务成本 +
-        b.原材料成本,
-      实际利润: a.营业利润,
-      预算利润: b.营业利润
-    };
-  });
+  return periods
+    .map((dbp) => {
+      const openIds = storeRefs
+        .filter((s) => isStoreOpenInPeriod(s.store_id, s.store_name, dbp.period_value))
+        .map((s) => s.store_id);
+      if (!openIds.length) return null;
+
+      const p = dbPeriodToReportPeriod(dbp);
+      const a = getActualAggregatedByStoreIds(openIds, p, actualOverrides);
+      const b = getBudgetAggregatedByStoreIds(openIds, p, overrides);
+      return {
+        周期: dbp.period_value,
+        实际收入: a.营业收入,
+        预算收入: b.营业收入,
+        实际成本: financialLineOperatingCost(a),
+        预算成本: financialLineOperatingCost(b),
+        实际利润: a.营业利润,
+        预算利润: b.营业利润
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row != null);
 }
 
 /** Dashboard 指标 */
@@ -558,19 +564,17 @@ export function getDashboardKpis(
   };
 }
 
-export function getHotelOperationsKpis(
-  storeScope: "all" | string,
+export function getHotelOperationsKpisForStoreIds(
+  storeIds: string[],
   period: ReportPeriod = 演示账期,
   actualOverrides?: ActualOverrideMap
 ) {
-  const hotels = getHotelStores();
-  const targetIds =
-    storeScope === "all" ? hotels.map((h) => h.id) : hotels.some((h) => h.id === storeScope) ? [storeScope] : hotels.map((h) => h.id);
+  const targetIds = storeIds.filter((id) => getStoreById(id)?.业态 === "酒店");
+  if (!targetIds.length) return null;
 
   const list = targetIds.map((id) => {
-    const s = getStoreById(id)!;
     const a = getActualForRoomNightBase(id, period, actualOverrides);
-    return { store: s, ...a };
+    return { ...a };
   });
 
   const sum = list.reduce(
@@ -589,8 +593,8 @@ export function getHotelOperationsKpis(
 
   const fa =
     targetIds.length === 1
-      ? getActualForStore(targetIds[0]!, period)
-      : getActualAggregatedHotelsOnly(period, actualOverrides);
+      ? getActualForStore(targetIds[0]!, period, actualOverrides)
+      : getActualAggregatedByStoreIds(targetIds, period, actualOverrides);
 
   return {
     可售间夜: Math.round(sum.可售间夜 * scale),
@@ -602,6 +606,52 @@ export function getHotelOperationsKpis(
     华住管理费: fa.华住管理费,
     人力成本: fa.人力成本,
     能源费用: fa.能源费用
+  };
+}
+
+export function getHotelOperationsKpis(
+  storeScope: "all" | string,
+  period: ReportPeriod = 演示账期,
+  actualOverrides?: ActualOverrideMap
+) {
+  const hotels = getHotelStores();
+  const targetIds =
+    storeScope === "all" ? hotels.map((h) => h.id) : hotels.some((h) => h.id === storeScope) ? [storeScope] : hotels.map((h) => h.id);
+  return getHotelOperationsKpisForStoreIds(targetIds, period, actualOverrides)!;
+}
+
+export function getBudgetHotelOperationsKpisForStoreIds(
+  storeIds: string[],
+  period: ReportPeriod = 演示账期,
+  overrides?: BudgetOverrideMap,
+  budgetVersion: BudgetVersionValue = DEFAULT_BUDGET_VERSION
+) {
+  const targetIds = storeIds.filter((id) => getStoreById(id)?.业态 === "酒店");
+  if (!targetIds.length) return null;
+
+  const list = targetIds.map((id) => {
+    const room = getActualForRoomNightBase(id, period);
+    const b = getBudgetForScope(id, period, overrides, budgetVersion);
+    return { 可售间夜: room.可售间夜, 已售间夜: room.已售间夜, 客房收入: b.客房收入 };
+  });
+
+  const sum = list.reduce(
+    (acc, row) => ({
+      可售间夜: acc.可售间夜 + row.可售间夜,
+      已售间夜: acc.已售间夜 + row.已售间夜,
+      客房收入: acc.客房收入 + row.客房收入
+    }),
+    { 可售间夜: 0, 已售间夜: 0, 客房收入: 0 }
+  );
+
+  const 入住率 = sum.可售间夜 > 0 ? sum.已售间夜 / sum.可售间夜 : 0;
+  const 平均房价 = sum.已售间夜 > 0 ? (sum.客房收入 * 10000) / sum.已售间夜 / 10000 : 0;
+  const revpar = sum.可售间夜 > 0 ? sum.客房收入 / sum.可售间夜 : 0;
+
+  return {
+    入住率,
+    平均房价: Math.round(平均房价 * 10) / 10,
+    revpar: Math.round(revpar * 10) / 10
   };
 }
 

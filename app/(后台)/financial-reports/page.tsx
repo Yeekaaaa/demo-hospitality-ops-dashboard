@@ -46,7 +46,7 @@ import { buildFullBudgetVariance } from "@/lib/budget-variance";
 import { DATA_CALIBER_RULES } from "@/lib/data-caliber";
 import { checkTrendQuality } from "@/lib/data-quality";
 import { dbPeriodToReportPeriod, reportPeriodToDbPeriod } from "@/lib/dashboard-metrics";
-import { trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
+import { isStoreOpenInPeriod, trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
 import {
   ACTIVE_STORE_SCOPE_DETAIL_LABEL,
   ACTIVE_STORE_SCOPE_SHORT_LABEL,
@@ -230,20 +230,27 @@ export default function FinancialReportsPage() {
             scopeIds.map((id) => ({ store_id: id, store_name: 门店主数据.find((s) => s.id === id)?.显示名称 })),
             6
           );
-    return periods.map((dbp) => {
-      const p = dbPeriodToReportPeriod(dbp);
-      const a = getActualAggregatedByStoreIds(scopeIds, p, actualOverrides);
-      const b = getBudgetAggregatedByStoreIds(scopeIds, p, budgetOverrides, reportFilter.budgetVersion);
-      return {
-        周期: dbp.period_value,
-        实际收入: a.营业收入,
-        预算收入: b.营业收入,
-        实际成本: a.人力成本 + a.能源费用 + a.华住管理费 + a.客房服务成本 + a.非客房服务成本 + a.原材料成本,
-        预算成本: b.人力成本 + b.能源费用 + b.华住管理费 + b.客房服务成本 + b.非客房服务成本 + b.原材料成本,
-        实际利润: a.营业利润,
-        预算利润: b.营业利润
-      };
-    });
+    return periods
+      .map((dbp) => {
+        const openIds = scopeIds.filter((id) =>
+          isStoreOpenInPeriod(id, 门店主数据.find((s) => s.id === id)?.显示名称, dbp.period_value)
+        );
+        if (!openIds.length) return null;
+
+        const p = dbPeriodToReportPeriod(dbp);
+        const a = getActualAggregatedByStoreIds(openIds, p, actualOverrides);
+        const b = getBudgetAggregatedByStoreIds(openIds, p, budgetOverrides, reportFilter.budgetVersion);
+        return {
+          周期: dbp.period_value,
+          实际收入: a.营业收入,
+          预算收入: b.营业收入,
+          实际成本: a.人力成本 + a.能源费用 + a.华住管理费 + a.客房服务成本 + a.非客房服务成本 + a.原材料成本,
+          预算成本: b.人力成本 + b.能源费用 + b.华住管理费 + b.客房服务成本 + b.非客房服务成本 + b.原材料成本,
+          实际利润: a.营业利润,
+          预算利润: b.营业利润
+        };
+      })
+      .filter((row): row is NonNullable<typeof row> => row != null);
   }, [
     scopeIds,
     reportFilter.year,
