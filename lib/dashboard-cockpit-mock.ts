@@ -86,7 +86,7 @@ function buildTotalsFromFinancial(
   let roomsAvailable = 0;
   let roomsSold = 0;
   if (hotelCount > 0 && kpis.入住率 != null && kpis.revpar != null) {
-    roomsAvailable = Math.max(100, Math.round((roomRevenueWan * 10000) / Math.max(1, kpis.revpar)));
+    roomsAvailable = Math.max(100, Math.round(roomRevenueWan / Math.max(1, kpis.revpar)));
     roomsSold = Math.round(roomsAvailable * safeNumber(kpis.入住率));
   } else if (hotelCount > 0) {
     roomsAvailable = hotelCount * 120;

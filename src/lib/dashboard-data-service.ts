@@ -23,15 +23,15 @@ import { getSupabaseClient } from "@/src/lib/supabase";
 export type { ActualDataStoreScope };
 import { getTotalCost } from "./cost";
 
-/** 首页第一行 MetricCard 可用的聚合结果（金额单位需与 DB 约定一致，建议与 mock 一致：万元） */
+/** 首页第一行 MetricCard 可用的聚合结果（客房收入相关 KPI 按元口径） */
 export interface DashboardActualAggregate {
   /** sum(revenue) */
   revenue: number;
   /** sum(rooms_sold) / sum(rooms_available)，分母为 0 时为 null */
   occupancy_rate: number | null;
-  /** 客房收入由万元转元后 ÷ Σ rooms_sold；单位：元；无法计算时为 null */
+  /** 客房收入（元）÷ Σ rooms_sold；单位：元；无法计算时为 null */
   adr: number | null;
-  /** 客房收入由万元转元后 ÷ Σ rooms_available；单位：元；无法计算时为 null */
+  /** 客房收入（元）÷ Σ rooms_available；单位：元；无法计算时为 null */
   revpar: number | null;
 }
 
@@ -147,11 +147,9 @@ export async function getDashboardKpisFromSupabase(
 
     const occupancy_rate = roomsAvailableSum > 0 ? roomsSoldSum / roomsAvailableSum : null;
 
-    const roomRevenueYuan = roomRevenueSum * 10000;
+    const adr = roomsSoldSum > 0 && roomRevenueSum > 0 ? roomRevenueSum / roomsSoldSum : null;
 
-    const adr = roomsSoldSum > 0 && roomRevenueYuan > 0 ? roomRevenueYuan / roomsSoldSum : null;
-
-    const revpar = roomsAvailableSum > 0 && roomRevenueYuan > 0 ? roomRevenueYuan / roomsAvailableSum : null;
+    const revpar = roomsAvailableSum > 0 && roomRevenueSum > 0 ? roomRevenueSum / roomsAvailableSum : null;
 
     if (revenueSum === 0) {
       return null;
@@ -171,11 +169,11 @@ export async function getDashboardKpisFromSupabase(
 export interface DashboardTrendPoint {
   /** 与 DB `period_value` 对齐，如 2026-04、2026-Q2、2026 */
   周期: string;
-  /** 金额单位：万元 */
+  /** 金额单位：元 */
   收入: number;
-  /** 金额单位：万元 */
+  /** 金额单位：元 */
   成本: number;
-  /** 金额单位：万元 */
+  /** 金额单位：元 */
   利润: number;
 }
 

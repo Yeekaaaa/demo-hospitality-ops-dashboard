@@ -29,10 +29,9 @@ export function hotelKpisFromOperatingSubjects(
   const 已售间夜 = Math.round(pick(operatingSubjects, "已售房晚", "已售间数"));
   const 客房收入 = pick(operatingSubjects, "客房收入");
   const 入住率 = 可售间夜 > 0 ? 已售间夜 / 可售间夜 : 0;
-  const roomYuan = 客房收入 * 10000;
-  const 平均房价 = 已售间夜 > 0 && roomYuan > 0 ? roomYuan / 已售间夜 : 0;
-  /** RevPAR（元/可售间夜）：room_revenue 为万元，见 docs/data-caliber-freeze.md */
-  const revpar = 可售间夜 > 0 && roomYuan > 0 ? roomYuan / 可售间夜 : 0;
+  const 平均房价 = 已售间夜 > 0 && 客房收入 > 0 ? 客房收入 / 已售间夜 : 0;
+  /** RevPAR（元/可售间夜）：客房收入为元 */
+  const revpar = 可售间夜 > 0 && 客房收入 > 0 ? 客房收入 / 可售间夜 : 0;
 
   return {
     可售间夜,

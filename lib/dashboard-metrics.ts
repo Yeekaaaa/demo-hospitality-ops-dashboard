@@ -28,10 +28,10 @@ export function calcOccupancyRate(roomsSold: number, roomsAvailable: number): nu
   return (roomsSold / roomsAvailable) * 100;
 }
 
-/** roomRevenue 单位：万元；返回元/间夜 */
+/** roomRevenue 单位：元（参数名 roomRevenueWan 为历史命名）；返回元/可售间夜 */
 export function calcRevPAR(roomRevenueWan: number, roomsAvailable: number): number {
   if (!Number.isFinite(roomsAvailable) || roomsAvailable === 0) return 0;
-  return (safeNumber(roomRevenueWan) * 10000) / roomsAvailable;
+  return safeNumber(roomRevenueWan) / roomsAvailable;
 }
 
 export function calcChange(current: number, previous: number): number {

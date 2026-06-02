@@ -34,20 +34,20 @@ function storeName(row: Record<string, unknown>): string {
   return n && n.length > 0 ? n : String(row.store_id ?? "未知门店");
 }
 
-/** 客房收入万元 → ADR（元） */
+/** 客房收入（元）→ ADR（元） */
 function adrYuan(row: Record<string, unknown>): number | null {
   const rr = num(row, "room_revenue");
   const sold = num(row, "rooms_sold");
   if (rr == null || sold == null || sold <= 0) return null;
-  return (rr * 10000) / sold;
+  return rr / sold;
 }
 
-/** RevPAR 元/间夜 */
+/** 客房收入（元）→ RevPAR（元/间夜） */
 function revparYuan(row: Record<string, unknown>): number | null {
   const rr = num(row, "room_revenue");
   const avail = num(row, "rooms_available");
   if (rr == null || avail == null || avail <= 0) return null;
-  return (rr * 10000) / avail;
+  return rr / avail;
 }
 
 /** GOP 率：存库为 0–1 或 0–100 均兼容 */
