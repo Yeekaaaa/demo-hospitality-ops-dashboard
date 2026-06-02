@@ -384,7 +384,7 @@ function buildHtml(input: BossOnePagerInput): string {
     </table>
   </div>
 
-  <p class="footer-note">说明：本页数据与驾驶舱看板同源；请在打印对话框中选择「另存为 PDF」完成归档。数值单位与线上一致（金额：万元；百分比：保留一位小数）。</p>
+  <p class="footer-note">说明：本页数据与驾驶舱看板同源；请在打印对话框中选择「另存为 PDF」完成归档。数值单位与线上一致（金额底层为元，展示为万元；百分比：保留一位小数）。</p>
 </body>
 </html>`;
 }

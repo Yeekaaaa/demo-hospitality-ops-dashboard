@@ -6,7 +6,7 @@ import { TrendChart } from "@/components/common/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStorePeriod } from "@/contexts/store-period-context";
-import { getRestaurantOperationsKpis, getTrendSeries } from "@/lib/mock-analytics";
+import { formatWan, getRestaurantOperationsKpis, getTrendSeries } from "@/lib/mock-analytics";
 import { getRestaurantStores, 全部门店值 } from "@/lib/store-master";
 
 export default function RestaurantOperationsPage() {
@@ -75,7 +75,7 @@ export default function RestaurantOperationsPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <MetricCard
           标题="营业收入"
-          数值={`¥ ${kpis.营业收入.toFixed(1)} 万`}
+          数值={formatWan(kpis.营业收入)}
           变化="+4.2%"
           趋势="up"
         />
@@ -93,7 +93,7 @@ export default function RestaurantOperationsPage() {
         />
         <MetricCard
           标题="原材料成本"
-          数值={`¥ ${kpis.原材料成本.toFixed(1)} 万`}
+          数值={formatWan(kpis.原材料成本)}
           变化="+1.1%"
           趋势="up"
         />

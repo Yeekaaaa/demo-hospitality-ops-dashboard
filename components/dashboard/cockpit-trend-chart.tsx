@@ -10,6 +10,7 @@ import {
   XAxis,
   YAxis
 } from "recharts";
+import { formatWan } from "@/lib/mock-analytics";
 import type { DashboardTrendPoint } from "@/src/lib/dashboard-data-service";
 
 export function CockpitTrendChart({ data }: { data: DashboardTrendPoint[] }) {
@@ -20,12 +21,13 @@ export function CockpitTrendChart({ data }: { data: DashboardTrendPoint[] }) {
         <LineChart data={safe}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="周期" stroke="#64748b" tick={{ fontSize: 13 }} />
-          <YAxis stroke="#64748b" tick={{ fontSize: 13 }} tickFormatter={(v) => `${v}`} />
+          <YAxis
+            stroke="#64748b"
+            tick={{ fontSize: 13 }}
+            tickFormatter={(v) => `${(Number(v) / 10000).toFixed(0)}`}
+          />
           <Tooltip
-            formatter={(value: number | string, name: string) => [
-              `¥ ${Number(value).toLocaleString("zh-CN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} 万`,
-              name
-            ]}
+            formatter={(value: number | string, name: string) => [formatWan(Number(value)), name]}
             labelFormatter={(l) => `账期 ${l}`}
             contentStyle={{ fontSize: 14 }}
           />

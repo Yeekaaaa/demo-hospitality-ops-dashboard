@@ -21,6 +21,7 @@ import {
 } from "@/lib/active-store-scope";
 import {
   formatPct,
+  formatWan,
   getActualAggregated,
   getHotelOperationsKpis,
   getTrendSeries
@@ -261,7 +262,7 @@ export default function HotelOperationsPage() {
           <MetricCard 标题="RevPAR" 数值={`¥ ${kpis.revpar}`} 变化={dataTag} 趋势="neutral" />
           <MetricCard
             标题="客房收入"
-            数值={`¥ ${kpis.客房收入.toFixed(1)} 万`}
+            数值={formatWan(kpis.客房收入)}
             变化={dataTag}
             趋势="neutral"
           />
@@ -273,13 +274,13 @@ export default function HotelOperationsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard
             标题="本期实际收入（酒店）"
-            数值={`¥ ${hotelRevenueActual.toFixed(1)} 万`}
+            数值={formatWan(hotelRevenueActual)}
             变化={useDbActual ? "actual_data" : "mock demo"}
             趋势="neutral"
           />
           <MetricCard
             标题="本期预算收入（酒店）"
-            数值={`¥ ${budgetFin.营业收入.toFixed(1)} 万`}
+            数值={formatWan(budgetFin.营业收入)}
             变化={useDbBudget ? "budget_data" : "budget_overrides"}
             趋势="neutral"
           />
@@ -297,19 +298,19 @@ export default function HotelOperationsPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <MetricCard
             标题="华住管理费"
-            数值={`¥ ${kpis.华住管理费.toFixed(1)} 万`}
+            数值={formatWan(kpis.华住管理费)}
             变化={dataTag}
             趋势="neutral"
           />
           <MetricCard
             标题="人力成本"
-            数值={`¥ ${kpis.人力成本.toFixed(1)} 万`}
+            数值={formatWan(kpis.人力成本)}
             变化={dataTag}
             趋势="neutral"
           />
           <MetricCard
             标题="能源费用"
-            数值={`¥ ${kpis.能源费用.toFixed(1)} 万`}
+            数值={formatWan(kpis.能源费用)}
             变化={dataTag}
             趋势="neutral"
           />

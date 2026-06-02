@@ -438,9 +438,11 @@ export const 利润表科目顺序: { key: keyof FinancialLineActual; label: str
   { key: "利润率", label: "利润率" }
 ];
 
-export function formatWan(n: number): string {
-  if (Number.isNaN(n)) return "—";
-  return `¥ ${n.toLocaleString("zh-CN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} 万`;
+/** 入参为底层「元」；展示为「¥ … 万」（内部 ÷ 10,000） */
+export function formatWan(yuan: number): string {
+  if (Number.isNaN(yuan) || !Number.isFinite(yuan)) return "—";
+  const wan = yuan / 10000;
+  return `¥ ${wan.toLocaleString("zh-CN", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} 万`;
 }
 
 export function formatPct(n: number): string {

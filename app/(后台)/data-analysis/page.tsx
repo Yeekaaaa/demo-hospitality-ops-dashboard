@@ -319,7 +319,7 @@ export default function DataAnalysisPage() {
           <p className="text-sm leading-relaxed text-slate-700">{businessIntro}</p>
           <div className="flex flex-wrap gap-8">
             <div>
-              <p className="text-xs text-muted-foreground">总收入（万元口径）</p>
+              <p className="text-xs text-muted-foreground">总收入（底层元，展示万元）</p>
               <p className="text-2xl font-semibold tabular-nums text-slate-900">
                 {hasAggregateSignal(snapshot.current) ? formatWan(snapshot.current.revenue) : "暂无数据"}
               </p>
@@ -376,7 +376,7 @@ export default function DataAnalysisPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>项目</TableHead>
-                  <TableHead className="text-right">变动（万元）</TableHead>
+                  <TableHead className="text-right">变动（展示万元）</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -410,7 +410,7 @@ export function buildRiskAlerts(input: RiskAlertBuildInput): RiskAlertTableRow[]
         id: nid(),
         预警项目: "经营现金流",
         门店: name,
-        当前值: `${formatWan(ocf)} 万元`,
+        当前值: formatWan(ocf),
         预警标准: "经营现金流为负",
         预警等级: "红灯",
         原因初判: "经营造血承压，需联动应收、应付与资本开支节奏。",

@@ -302,10 +302,10 @@ export function buildOperatingLeverageNarrative(screen: ActualDataAssetScreen): 
     bits.push(`能耗成本率约 ${formatPctOneDecimal(screen.energyCostRatioWavg * 100)}`);
   }
   if (screen.brandFeeSum != null && screen.revenueSum > 0) {
-    bits.push(`品牌及技术服务相关费用合计约 ${formatWan(screen.brandFeeSum)} 万元`);
+    bits.push(`品牌及技术服务相关费用合计约 ${formatWan(screen.brandFeeSum)}`);
   }
   if (screen.repairCostSum != null) {
-    bits.push(`维修成本合计约 ${formatWan(screen.repairCostSum)} 万元`);
+    bits.push(`维修成本合计约 ${formatWan(screen.repairCostSum)}`);
   }
   if (bits.length === 0) {
     return "已录入部分扩展字段，与成本杠杆直接相关的指标尚不完整；建议在模板中补齐人工成本率、能耗成本率及品牌、维修等费用后，再对本段叙事做完整评估。";
@@ -318,10 +318,10 @@ export function buildAssetQualityOwnerNarrative(screen: ActualDataAssetScreen): 
   if (!screen.hasAnyEnhanced) return DATA_ANALYSIS_ASSET_FALLBACK;
   const bits: string[] = [];
   if (screen.ocfSum != null) {
-    bits.push(`经营现金流合计约 ${formatWan(screen.ocfSum)} 万元`);
+    bits.push(`经营现金流合计约 ${formatWan(screen.ocfSum)}`);
   }
   if (screen.capexSum != null) {
-    bits.push(`资本开支（整改等）合计约 ${formatWan(screen.capexSum)} 万元`);
+    bits.push(`资本开支（整改等）合计约 ${formatWan(screen.capexSum)}`);
   }
   if (screen.competitorMax != null) {
     bits.push(`同商圈新增竞品监测峰值 ${screen.competitorMax} 家`);

@@ -4,6 +4,7 @@
 
 import { filterActiveMockStores } from "@/lib/active-store-scope";
 import {
+  formatWan,
   getActualAggregated,
   getActualAggregatedByStoreIds,
   getBudgetAggregatedByStoreIds,
@@ -328,7 +329,10 @@ export function formatBudgetDisplayValue(value: number, unit: string, kind: Budg
     return `${value.toFixed(1)}%`;
   }
   if (kind === "yuan" || unit.includes("元")) {
-    return `¥ ${value.toLocaleString("zh-CN", { maximumFractionDigits: 0 })}`;
+    if (unit.includes("/") || unit.includes("间夜") || unit.includes("/人")) {
+      return `¥ ${value.toLocaleString("zh-CN", { maximumFractionDigits: 1 })}`;
+    }
+    return formatWan(value);
   }
   if (Number.isInteger(value)) return value.toLocaleString("zh-CN");
   return value.toLocaleString("zh-CN", { maximumFractionDigits: 2 });

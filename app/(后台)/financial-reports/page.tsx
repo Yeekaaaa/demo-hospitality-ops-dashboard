@@ -487,7 +487,7 @@ export default function FinancialReportsPage() {
       const pct = value <= 1 && value >= -1 ? value * 100 : value;
       return `${pct.toFixed(1)}%`;
     }
-    if (line.unit === "万元") return formatWan(value);
+    if (line.unit === "万元" || line.unit === "元") return formatWan(value);
     if (Number.isInteger(value)) return value.toLocaleString("zh-CN");
     return value.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
   };

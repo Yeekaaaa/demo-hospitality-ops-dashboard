@@ -861,16 +861,16 @@ export default function DashboardPage() {
         <CardHeader className="pb-2">
           <CardTitle className="text-base font-semibold text-slate-800">数据口径说明</CardTitle>
           <p className="text-sm leading-6 text-muted-foreground">
-            与当前页 KPI、趋势及排行一致，便于会上对齐口径；金额除 RevPAR 外均为万元。
+            与当前页 KPI、趋势及排行一致，便于会上对齐口径；金额底层为元，卡片与表格展示为万元。
           </p>
         </CardHeader>
         <CardContent className="text-sm leading-7 text-slate-700">
           <ul className="list-disc space-y-3 pl-5 marker:text-slate-400">
             <li>
               <span className="font-medium text-slate-800">金额单位：</span>
-              营业收入、成本、利润及结构拆分等，单位均为
-              <span className="font-medium"> 万元（¥） </span>
-              ，与卡片「¥…万」一致；RevPAR 单独标注为元/间夜。
+              营业收入、成本、利润及结构拆分等，底层存库与聚合均为
+              <span className="font-medium"> 元 </span>
+              ，页面经 formatter 展示为「¥…万」；RevPAR、ADR 等按元/间夜原值展示，不除以 10,000。
             </li>
             <li>
               <span className="font-medium text-slate-800">收入：</span>
@@ -894,7 +894,7 @@ export default function DashboardPage() {
             </li>
             <li>
               <span className="font-medium text-slate-800">RevPAR：</span>
-              客房收入（万元）× 10,000 ÷ 可售房晚数，得到平均每间可售房每晚带来的客房收入，单位为元/间夜；可售房晚为 0 时不计算。
+              客房收入（元）÷ 可售房晚数，得到平均每间可售房每晚带来的客房收入，单位为元/间夜；可售房晚为 0 时不计算。
             </li>
             <li>
               <span className="font-medium text-slate-800">环比：</span>

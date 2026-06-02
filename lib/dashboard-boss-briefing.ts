@@ -75,8 +75,10 @@ function shortStore(name: string): string {
   return `${t.slice(0, 3)}…`;
 }
 
-function wanShort(n: number): string {
-  const v = Math.abs(n) >= 100 ? String(Math.round(n)) : n.toFixed(1);
+/** 入参为「元」，摘要展示为「x万」 */
+function wanShort(yuan: number): string {
+  const wan = yuan / 10000;
+  const v = Math.abs(wan) >= 100 ? String(Math.round(wan)) : wan.toFixed(1);
   return `${v}万`;
 }
 

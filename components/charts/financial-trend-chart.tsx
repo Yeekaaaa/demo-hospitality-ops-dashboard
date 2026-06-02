@@ -1,5 +1,6 @@
 "use client";
 
+import { formatWan } from "@/lib/mock-analytics";
 import {
   CartesianGrid,
   Legend,
@@ -15,10 +16,12 @@ export type TrendChartMode = "实际对比预算" | "收入成本利润";
 
 export type TrendChartMetric = "收入" | "成本" | "利润" | "出租率" | "RevPAR" | "ADR";
 
+const MONEY_METRICS = new Set<TrendChartMetric>(["收入", "成本", "利润"]);
+
 const METRIC_FORMAT: Record<TrendChartMetric, { suffix: string; decimals: number }> = {
-  收入: { suffix: " 元", decimals: 0 },
-  成本: { suffix: " 元", decimals: 0 },
-  利润: { suffix: " 元", decimals: 0 },
+  收入: { suffix: " 万", decimals: 1 },
+  成本: { suffix: " 万", decimals: 1 },
+  利润: { suffix: " 万", decimals: 1 },
   出租率: { suffix: "%", decimals: 1 },
   RevPAR: { suffix: " 元", decimals: 0 },
   ADR: { suffix: " 元", decimals: 0 }
@@ -94,8 +97,21 @@ export function FinancialTrendChart({
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis dataKey="month" stroke="#64748b" />
-            <YAxis stroke="#64748b" />
-            <Tooltip formatter={(v: number) => `${v.toFixed(fmt.decimals)}${fmt.suffix}`} />
+            <YAxis
+              stroke="#64748b"
+              tickFormatter={(v) =>
+                MONEY_METRICS.has(metric)
+                  ? `${(Number(v) / 10000).toFixed(0)}`
+                  : `${Number(v).toFixed(fmt.decimals)}`
+              }
+            />
+            <Tooltip
+              formatter={(v: number) =>
+                MONEY_METRICS.has(metric)
+                  ? formatWan(v)
+                  : `${v.toFixed(fmt.decimals)}${fmt.suffix}`
+              }
+            />
             <Legend />
             <Line
               type="monotone"
