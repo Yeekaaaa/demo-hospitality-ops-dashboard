@@ -7,6 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
+  ImportPreviewLegend,
+  ImportPreviewSummary
+} from "@/components/import/import-preview-summary";
+import { ImportStepIndicator, type ImportFlowPhase } from "@/components/import/import-step-indicator";
+import {
   downloadOperatingDataImportTemplate,
   OPERATING_DATA_IMPORT_SHEET_NAME
 } from "@/lib/operating-data-import-template";
@@ -61,6 +66,12 @@ export default function OperatingDataTemplatePage() {
     previewRows.length > 0 &&
     previewRows.every((r) => r.errors.length === 0);
 
+  const importFlowPhase: ImportFlowPhase = useMemo(() => {
+    if (previewRows && previewRows.length > 0 && allPreviewRowsPass) return "ready";
+    if (previewRows && previewRows.length > 0) return "preview";
+    return "prepare";
+  }, [previewRows, allPreviewRowsPass]);
+
   const handleDownload = async () => {
     setLoading(true);
     try {
@@ -108,7 +119,7 @@ export default function OperatingDataTemplatePage() {
     try {
       const stores = await getStores();
       if (!stores.length) {
-        throw new Error("未从 Supabase 读取到门店列表，请检查 stores 表是否有数据。");
+        throw new Error("未读取到门店列表，请确认系统中已维护门店信息。");
       }
       const summary = await importOperatingDataToSupabase(previewRows, stores);
       setImportSummary(summary);
@@ -127,25 +138,28 @@ export default function OperatingDataTemplatePage() {
   }, [previewRows, allPreviewRowsPass, uploadFileName, importOperator]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">经营数据导入模板</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">经营数据导入</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          生成与经营驾驶舱 <code className="rounded bg-muted px-1 py-0.5 text-xs">actual_data</code>{" "}
-          表字段对齐的 Excel 模板，含中文表头、示例行与「字段说明」工作表。支持上传预览、校验与写入 Supabase。
+          用于导入每月经营实际数据。金额字段请填写<strong className="font-medium text-slate-800">元</strong>
+          ，例如 <span className="font-mono text-slate-800">3000000</span> 表示 300 万。
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          建议每月由财务或店长按门店填写本月经营数据。基础字段必填，增强字段可逐步完善。上传确认后<strong>仅写入 actual_data</strong>
-          （实际经营结果），不包含任何预算字段；预算请在「预算管理」中单独维护。
+          建议每月由财务或店长按门店填写。模板共 42 列（含基础指标与酒店资产扩展字段）。确认导入后
+          <strong className="font-medium text-slate-800">仅写入经营实际数据</strong>
+          ，预算请在「预算管理」中单独维护。
         </p>
       </div>
 
+      <ImportStepIndicator phase={importFlowPhase} />
+
       <Card className="max-w-2xl border-slate-200 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">下载模板</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">步骤 1 · 下载模板</CardTitle>
           <p className="text-sm text-muted-foreground">
-            表头在原有「门店、账期、收入、成本、利润、房晚、客房收入」基础上，追加酒店资产管理扩展字段（渠道结构、成本拆解、GOP/NOI/现金流、风险与运营质量等）。金额列单位为元；占比为
-            0–1 小数或百分数。
+            含中文表头、示例行与「字段说明」工作表。金额列单位为<strong className="font-medium text-slate-800">元</strong>
+            （勿按万元填写，如 300 万应写 3000000）；占比为 0–1 小数或百分数。
           </p>
         </CardHeader>
         <CardContent className="flex flex-wrap items-center gap-3">
@@ -158,11 +172,10 @@ export default function OperatingDataTemplatePage() {
       </Card>
 
       <Card className="border-slate-200 shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-base">上传经营数据 Excel 并预览</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">步骤 2–3 · 填写并上传检查</CardTitle>
           <p className="text-sm text-muted-foreground">
-            请上传使用上述模板编辑的文件；系统将读取「{OPERATING_DATA_IMPORT_SHEET_NAME}」工作表并校验必填项与格式。全部校验通过后可一键写入
-            actual_data（见下方「确认导入」）。
+            请上传使用模板编辑的 Excel；系统读取「{OPERATING_DATA_IMPORT_SHEET_NAME}」工作表并校验必填项与格式。错误须修正后才能导入，金额提示不阻断导入。
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -203,18 +216,23 @@ export default function OperatingDataTemplatePage() {
 
       {previewRows && previewRows.length > 0 && (
         <Card className="border-slate-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base">预览与校验</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">上传预览与校验结果</CardTitle>
             <p className="text-sm text-muted-foreground">
-              空行已自动跳过。标红行为校验错误（须修正后才能导入）；标黄行为仅有提示（如金额疑似按万元填写，不阻断导入）。序号与
-              Excel 非空数据行一致。
+              空行已自动跳过。序号与 Excel 非空数据行一致。共 {previewRows.length} 行。
             </p>
           </CardHeader>
-          <CardContent className="overflow-x-auto">
+          <CardContent className="space-y-3">
+            <ImportPreviewSummary rows={previewRows} />
+            <ImportPreviewLegend />
+            <p className="text-xs text-muted-foreground">表格较宽，可横向滚动查看全部 42 列。</p>
+            <div className="overflow-x-auto rounded-md border border-slate-200">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-10">#</TableHead>
+                  <TableHead className="sticky left-0 z-20 w-10 bg-slate-50 shadow-[2px_0_4px_-2px_rgba(15,23,42,0.06)]">
+                    #
+                  </TableHead>
                   <TableHead>门店</TableHead>
                   <TableHead>账期类型</TableHead>
                   <TableHead>账期</TableHead>
@@ -229,19 +247,33 @@ export default function OperatingDataTemplatePage() {
                       {c.headerZh}
                     </TableHead>
                   ))}
-                  <TableHead className="min-w-[200px]">校验结果</TableHead>
+                  <TableHead className="sticky right-0 z-20 min-w-[200px] bg-slate-50 shadow-[-2px_0_4px_-2px_rgba(15,23,42,0.06)]">
+                    校验结果
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {previewRows.map((r) => {
                   const bad = r.errors.length > 0;
                   const hasWarnings = r.warnings.length > 0;
+                  const rowBg = bad
+                    ? "bg-red-50/90"
+                    : hasWarnings
+                      ? "bg-amber-50/80"
+                      : "bg-white";
                   return (
                     <TableRow
                       key={r.previewIndex}
-                      className={cn(bad && "bg-red-50/90", !bad && hasWarnings && "bg-amber-50/80")}
+                      className={cn(rowBg)}
                     >
-                      <TableCell className="text-muted-foreground">{r.previewIndex}</TableCell>
+                      <TableCell
+                        className={cn(
+                          "sticky left-0 z-10 text-muted-foreground shadow-[2px_0_4px_-2px_rgba(15,23,42,0.06)]",
+                          rowBg
+                        )}
+                      >
+                        {r.previewIndex}
+                      </TableCell>
                       <TableCell className="font-medium">{r.门店}</TableCell>
                       <TableCell>{r.账期类型}</TableCell>
                       <TableCell>{r.账期}</TableCell>
@@ -267,14 +299,19 @@ export default function OperatingDataTemplatePage() {
                           </TableCell>
                         );
                       })}
-                      <TableCell className="text-sm">
+                      <TableCell
+                        className={cn(
+                          "sticky right-0 z-10 text-sm shadow-[-2px_0_4px_-2px_rgba(15,23,42,0.06)]",
+                          rowBg
+                        )}
+                      >
                         {bad ? (
-                          <span className="text-red-800">{r.errors.join("；")}</span>
+                          <span className="font-medium text-red-800">{r.errors.join("；")}</span>
                         ) : (
                           <div className="space-y-1">
-                            <span className="text-emerald-700">通过</span>
+                            <span className="font-medium text-emerald-700">通过</span>
                             {hasWarnings && (
-                              <ul className="list-inside list-disc text-amber-900">
+                              <ul className="list-inside list-disc text-amber-950">
                                 {r.warnings.map((w) => (
                                   <li key={w}>{w}</li>
                                 ))}
@@ -288,25 +325,23 @@ export default function OperatingDataTemplatePage() {
                 })}
               </TableBody>
             </Table>
+            </div>
           </CardContent>
         </Card>
       )}
 
       {previewRows && previewRows.length > 0 && allPreviewRowsPass && (
         <Card className="max-w-3xl border-emerald-200 bg-emerald-50/40 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base">确认导入 Supabase</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">步骤 4 · 确认导入</CardTitle>
             <p className="text-sm text-muted-foreground">
-              当前预览共 {previewRows.length} 行，均已通过格式校验。导入时将门店名称映射为{" "}
-              <code className="rounded bg-white/80 px-1 text-xs">stores.id</code>
-              ，并按「门店 + 账期类型 + 账期」对 <code className="rounded bg-white/80 px-1 text-xs">actual_data</code>{" "}
-              执行新增或更新。
+              当前预览共 {previewRows.length} 行，格式校验已通过。将按「门店 + 账期类型 + 账期」写入或更新经营实际数据。
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {!hasSupabaseEnv && (
               <p className="text-sm text-amber-900">
-                未检测到 NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY，无法执行导入。配置环境变量后刷新页面。
+                未配置经营数据连接，无法执行导入。请联系管理员完成配置后刷新页面。
               </p>
             )}
             <div className="max-w-md space-y-1.5">
@@ -323,14 +358,20 @@ export default function OperatingDataTemplatePage() {
               />
               <p className="text-xs text-muted-foreground">留空则历史记录中记为「未登记」。历史保存在本浏览器。</p>
             </div>
-            <Button
-              type="button"
-              disabled={!hasSupabaseEnv || importBusy}
-              onClick={handleConfirmImport}
-            >
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              {importBusy ? "正在导入…" : "确认导入 Supabase"}
-            </Button>
+            <div className="flex flex-col gap-3 border-t border-emerald-200/80 pt-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-slate-700">
+                将写入<strong className="font-medium">经营实际数据</strong>，预算数据不会被修改。
+              </p>
+              <Button
+                type="button"
+                className="shrink-0"
+                disabled={!hasSupabaseEnv || importBusy}
+                onClick={handleConfirmImport}
+              >
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                {importBusy ? "正在导入…" : "确认导入"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       )}
