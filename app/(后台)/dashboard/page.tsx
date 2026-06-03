@@ -27,7 +27,7 @@ import {
 } from "@/lib/dashboard-metrics";
 import { financialLineFromOperatingSubjectsOnly } from "@/lib/actual-data-subject-bridge";
 import { cockpitSnapshotFromOperatingSubjects } from "@/lib/actual-data-cockpit-bridge";
-import { ActualDataSourceHint } from "@/components/common/actual-data-source-hint";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { dashboardToActualDataScope } from "@/lib/dashboard-actual-scope";
 import { resolveBudgetScopeFromQueryScope } from "@/lib/budget-scope";
 import { formatWan, getDashboardKpis } from "@/lib/mock-analytics";
@@ -39,7 +39,6 @@ import {
 } from "@/lib/actual-vs-budget-kpi";
 import { DEFAULT_BUDGET_VERSION, getBudgetVersionLabel } from "@/lib/budget-versions";
 import { DATA_CALIBER_RULES } from "@/lib/data-caliber";
-import { BudgetDataSourceHint } from "@/components/common/budget-data-source-hint";
 import { useBudgetOverrides } from "@/contexts/budget-overrides-context";
 import { useBudgetDataForScope } from "@/contexts/budget-data-supabase-context";
 import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-context";
@@ -456,28 +455,6 @@ export default function DashboardPage() {
         <p className="mt-1 text-xs text-muted-foreground">
           {DATA_CALIBER_RULES.dashboardRead}（{getBudgetVersionLabel(DEFAULT_BUDGET_VERSION)}）
         </p>
-        <ActualDataSourceHint
-          className="mt-2"
-          hasSupabaseEnv={hasActualDataEnv}
-          loading={actualDataLoading}
-          useDbActual={useDbActual}
-          reportPeriod={reportPeriod}
-          scopeDescription={actualDataScopeLabel}
-        />
-        <BudgetDataSourceHint
-          className="mt-1"
-          hasSupabaseEnv={hasBudgetEnv}
-          loading={budgetLoading}
-          scopeMode={budgetScopeResolution.mode}
-          useDbBudget={useDbBudget}
-          budgetSource={budgetSource}
-          singleStoreId={budgetScopeResolution.singleStoreId}
-          queryError={budgetQueryError}
-          rowCount={budgetRowCount}
-          invalidReason={budgetScopeResolution.invalidReason}
-          reportPeriod={reportPeriod}
-          scopeDescription={budgetScopeResolution.scopeLabel}
-        />
         {snapshotUsesSupabase ? (
           <p className="mt-1 text-xs text-emerald-800">
             收入/利润/出租率/RevPAR 等指标已按 actual_data 聚合
@@ -485,6 +462,29 @@ export default function DashboardPage() {
           </p>
         ) : null}
       </div>
+
+      <DataSourceBanner
+        actual={{
+          hasSupabaseEnv: hasActualDataEnv,
+          loading: actualDataLoading,
+          useDbActual,
+          reportPeriod,
+          scopeDescription: actualDataScopeLabel
+        }}
+        budget={{
+          hasSupabaseEnv: hasBudgetEnv,
+          loading: budgetLoading,
+          scopeMode: budgetScopeResolution.mode,
+          useDbBudget,
+          budgetSource,
+          singleStoreId: budgetScopeResolution.singleStoreId,
+          queryError: budgetQueryError,
+          rowCount: budgetRowCount,
+          invalidReason: budgetScopeResolution.invalidReason,
+          reportPeriod,
+          scopeDescription: budgetScopeResolution.scopeLabel
+        }}
+      />
 
       <Card>
         <CardHeader>

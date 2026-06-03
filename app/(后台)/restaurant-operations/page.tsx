@@ -5,6 +5,7 @@ import { MetricCard } from "@/components/common/metric-card";
 import { TrendChart } from "@/components/common/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { useStorePeriod } from "@/contexts/store-period-context";
 import { formatWan, getRestaurantOperationsKpis, getTrendSeries } from "@/lib/mock-analytics";
 import { getRestaurantStores, 全部门店值 } from "@/lib/store-master";
@@ -72,6 +73,20 @@ export default function RestaurantOperationsPage() {
         </p>
       )}
 
+      <DataSourceBanner
+        actual={{
+          hasSupabaseEnv: false,
+          loading: false,
+          useDbActual: false,
+          reportPeriod,
+          scopeDescription:
+            localRest === "all"
+              ? "全部餐饮"
+              : rests.find((r) => r.id === localRest)?.显示名称 ?? "餐饮门店",
+          forceDemo: true
+        }}
+      />
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
         <MetricCard
           标题="营业收入"
@@ -108,7 +123,7 @@ export default function RestaurantOperationsPage() {
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2">
           <CardHeader>
-            <CardTitle>餐饮经营趋势（近 6 月 · 实际）</CardTitle>
+            <CardTitle>餐饮经营趋势（近 6 月 · 演示）</CardTitle>
           </CardHeader>
           <CardContent>
             <TrendChart data={trend} />

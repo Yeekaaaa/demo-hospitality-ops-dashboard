@@ -6,8 +6,7 @@ import { useRouter } from "next/navigation";
 import { ActualExcelImportPanel } from "@/components/actual/actual-excel-import-panel";
 import { FinancialTrendChart, type TrendChartMode } from "@/components/charts/financial-trend-chart";
 import { BudgetImportActions } from "@/components/budget/budget-import-actions";
-import { ActualDataSourceHint } from "@/components/common/actual-data-source-hint";
-import { BudgetDataSourceHint } from "@/components/common/budget-data-source-hint";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { DataQualityBanner } from "@/components/common/data-quality-banner";
 import { MetricCard } from "@/components/common/metric-card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -914,6 +913,29 @@ export default function FinancialReportsPage() {
         </CardContent>
       </Card>
 
+      <DataSourceBanner
+        actual={{
+          hasSupabaseEnv: hasActualDataEnv,
+          loading: actualDataLoading,
+          useDbActual,
+          reportPeriod,
+          scopeDescription: scopeLabel
+        }}
+        budget={{
+          hasSupabaseEnv: hasBudgetEnv,
+          loading: budgetLoading,
+          scopeMode: budgetScopeResolution.mode,
+          useDbBudget,
+          budgetSource,
+          singleStoreId: budgetScopeResolution.singleStoreId,
+          queryError: budgetQueryError,
+          rowCount: budgetRowCount,
+          invalidReason: budgetScopeResolution.invalidReason,
+          reportPeriod,
+          scopeDescription: budgetScopeResolution.scopeLabel
+        }}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">实际 vs 预算（核心指标）</CardTitle>
@@ -940,27 +962,6 @@ export default function FinancialReportsPage() {
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {kpiTop.map((k) => <MetricCard key={k.标题} {...k} />)}
       </section>
-
-      <ActualDataSourceHint
-        hasSupabaseEnv={hasActualDataEnv}
-        loading={actualDataLoading}
-        useDbActual={useDbActual}
-        reportPeriod={reportPeriod}
-        scopeDescription={scopeLabel}
-      />
-      <BudgetDataSourceHint
-        hasSupabaseEnv={hasBudgetEnv}
-        loading={budgetLoading}
-        scopeMode={budgetScopeResolution.mode}
-        useDbBudget={useDbBudget}
-        budgetSource={budgetSource}
-        singleStoreId={budgetScopeResolution.singleStoreId}
-        queryError={budgetQueryError}
-        rowCount={budgetRowCount}
-        invalidReason={budgetScopeResolution.invalidReason}
-        reportPeriod={reportPeriod}
-        scopeDescription={budgetScopeResolution.scopeLabel}
-      />
 
       <Card>
         <CardHeader>

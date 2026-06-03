@@ -4,8 +4,7 @@ import Link from "next/link";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BudgetImportActions } from "@/components/budget/budget-import-actions";
 import { BudgetExcelImportPanel } from "@/components/budget/budget-excel-import-panel";
-import { ActualDataSourceHint } from "@/components/common/actual-data-source-hint";
-import { BudgetDataSourceHint } from "@/components/common/budget-data-source-hint";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { DataQualityBanner } from "@/components/common/data-quality-banner";
 import { FinancialTrendChart, type TrendChartMode, type TrendChartMetric } from "@/components/charts/financial-trend-chart";
 import { MetricCard } from "@/components/common/metric-card";
@@ -567,26 +566,27 @@ export default function BudgetManagementPage() {
           </div>
         </CardContent>
         <CardContent className="border-t pt-4 space-y-2">
-          <ActualDataSourceHint
-            hasSupabaseEnv={hasSupabaseEnv}
-            loading={actualDataLoading}
-            useDbActual={hasSupabaseEnv && hasDbRows}
-            reportPeriod={reportPeriod}
-            scopeDescription={storeLabel}
-          />
-          <BudgetDataSourceHint
-            hasSupabaseEnv={hasBudgetSupabaseEnv}
-            loading={budgetDataLoading}
-            scopeMode={budgetScopeResolution.mode}
-            useDbBudget={useDbBudget}
-            budgetSource={budgetSource}
-            singleStoreId={budgetScopeResolution.singleStoreId}
-            queryError={queryError}
-            rowCount={rowCount}
-            invalidReason={budgetScopeResolution.invalidReason}
-            reportPeriod={reportPeriod}
-            scopeDescription={storeLabel}
-            queryTarget={budgetQueryTarget}
+          <DataSourceBanner
+            actual={{
+              hasSupabaseEnv,
+              loading: actualDataLoading,
+              useDbActual: hasSupabaseEnv && hasDbRows,
+              reportPeriod,
+              scopeDescription: storeLabel
+            }}
+            budget={{
+              hasSupabaseEnv: hasBudgetSupabaseEnv,
+              loading: budgetDataLoading,
+              scopeMode: budgetScopeResolution.mode,
+              useDbBudget,
+              budgetSource,
+              singleStoreId: budgetScopeResolution.singleStoreId,
+              queryError,
+              rowCount,
+              invalidReason: budgetScopeResolution.invalidReason,
+              reportPeriod,
+              scopeDescription: storeLabel
+            }}
           />
           {saveStatus ? <p className="text-xs text-emerald-800">{saveStatus}</p> : null}
         </CardContent>

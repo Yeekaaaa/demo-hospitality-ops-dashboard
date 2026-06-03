@@ -31,7 +31,7 @@ import {
 } from "@/lib/dashboard-metrics";
 import { summarizeActualDataAssetRows } from "@/lib/actual-data-asset-aggregate";
 import { formatWan } from "@/lib/mock-analytics";
-import { ActualDataSourceHint } from "@/components/common/actual-data-source-hint";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { useActiveStores } from "@/contexts/active-stores-context";
 import { useActualOverrides } from "@/contexts/actual-overrides-context";
 import { useStorePeriod } from "@/contexts/store-period-context";
@@ -320,13 +320,15 @@ export default function DataAnalysisPage() {
           本页与驾驶舱共用 cockpit 聚合与门店排行口径，侧重呈现经营表现、盈利质量、改进抓手与增长路径，便于对内对齐与对外沟通。观察窗口：{periodLabel}
           （门店范围与账期与顶部导航一致）。
         </p>
-        <ActualDataSourceHint
-          className="mt-2"
-          hasSupabaseEnv={hasActualDataEnv}
-          loading={actualDataLoading}
-          useDbActual={useDbActual}
-          reportPeriod={reportPeriod}
-          scopeDescription={actualDataScopeLabel}
+        <DataSourceBanner
+          className="mt-3"
+          actual={{
+            hasSupabaseEnv: hasActualDataEnv,
+            loading: actualDataLoading,
+            useDbActual,
+            reportPeriod,
+            scopeDescription: actualDataScopeLabel
+          }}
         />
       </header>
 

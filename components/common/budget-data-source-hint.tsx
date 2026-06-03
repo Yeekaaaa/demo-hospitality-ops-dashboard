@@ -1,11 +1,8 @@
 "use client";
 
 import type { ReportPeriod } from "@/lib/mock-analytics";
-import {
-  buildBudgetDataSourceMessage,
-  type BudgetDataHintState
-} from "@/lib/budget-data-source";
-import { formatActualDataPeriodHint } from "@/lib/actual-data-source";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
+import type { BudgetDataHintState } from "@/lib/budget-data-source";
 
 type Props = BudgetDataHintState & {
   reportPeriod: ReportPeriod;
@@ -14,30 +11,19 @@ type Props = BudgetDataHintState & {
   className?: string;
 };
 
-export function BudgetDataSourceHint({
-  reportPeriod,
-  scopeDescription,
-  queryTarget,
-  className,
-  ...state
-}: Props) {
-  const periodHint = formatActualDataPeriodHint(reportPeriod);
-  const sourceText = buildBudgetDataSourceMessage(state);
-  const tone =
-    state.queryError || state.scopeMode === "invalid"
-      ? "text-amber-800"
-      : state.useDbBudget
-        ? "text-emerald-800"
-        : "text-muted-foreground";
-
+/** @deprecated 请使用 DataSourceBanner */
+export function BudgetDataSourceHint({ reportPeriod, scopeDescription, className, queryTarget, ...state }: Props) {
   return (
-    <div className={className ?? "space-y-0.5"}>
-      <p className={`text-xs ${tone}`}>
-        {sourceText} · {periodHint}
-      </p>
-      <p className="text-xs text-muted-foreground">预算查询范围：{scopeDescription}</p>
+    <div className={className}>
+      <DataSourceBanner
+        budget={{
+          ...state,
+          reportPeriod,
+          scopeDescription
+        }}
+      />
       {queryTarget ? (
-        <p className="text-xs font-mono text-muted-foreground">{queryTarget}</p>
+        <p className="mt-1 text-xs font-mono text-muted-foreground">{queryTarget}</p>
       ) : null}
     </div>
   );

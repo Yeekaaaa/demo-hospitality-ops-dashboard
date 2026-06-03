@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ActualExcelImportPanel } from "@/components/actual/actual-excel-import-panel";
-import { ActualDataSourceHint } from "@/components/common/actual-data-source-hint";
+import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { MetricCard } from "@/components/common/metric-card";
 import { TrendChart } from "@/components/common/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,7 +26,6 @@ import {
   getHotelOperationsKpis,
   getTrendSeries
 } from "@/lib/mock-analytics";
-import { BudgetDataSourceHint } from "@/components/common/budget-data-source-hint";
 import { useBudgetDataForScope } from "@/contexts/budget-data-supabase-context";
 import { resolveBudgetScopeFromQueryScope } from "@/lib/budget-scope";
 import { DEFAULT_BUDGET_VERSION } from "@/lib/budget-versions";
@@ -183,28 +182,6 @@ export default function HotelOperationsPage() {
           <p className="text-sm text-muted-foreground">
             仅含酒店门店；经营指标优先来自 actual_data。{DATA_CALIBER_RULES.hotelOpsRead}
           </p>
-          <ActualDataSourceHint
-            className="mt-2"
-            hasSupabaseEnv={hasActualDataEnv}
-            loading={actualDataLoading}
-            useDbActual={useDbActual}
-            reportPeriod={reportPeriod}
-            scopeDescription={actualDataScopeLabel}
-          />
-          <BudgetDataSourceHint
-            className="mt-1"
-            hasSupabaseEnv={hasBudgetEnv}
-            loading={budgetLoading}
-            scopeMode={budgetScopeResolution.mode}
-            useDbBudget={useDbBudget}
-            budgetSource={budgetSource}
-            singleStoreId={budgetScopeResolution.singleStoreId}
-            queryError={budgetQueryError}
-            rowCount={budgetRowCount}
-            invalidReason={budgetScopeResolution.invalidReason}
-            reportPeriod={reportPeriod}
-            scopeDescription={budgetScopeResolution.scopeLabel}
-          />
         </div>
         <div className="w-72">
           <Select
@@ -232,6 +209,29 @@ export default function HotelOperationsPage() {
             当前顶部筛选为餐饮门店，本页已按「全部酒店」汇总展示。
           </p>
         )}
+
+      <DataSourceBanner
+        actual={{
+          hasSupabaseEnv: hasActualDataEnv,
+          loading: actualDataLoading,
+          useDbActual,
+          reportPeriod,
+          scopeDescription: actualDataScopeLabel
+        }}
+        budget={{
+          hasSupabaseEnv: hasBudgetEnv,
+          loading: budgetLoading,
+          scopeMode: budgetScopeResolution.mode,
+          useDbBudget,
+          budgetSource,
+          singleStoreId: budgetScopeResolution.singleStoreId,
+          queryError: budgetQueryError,
+          rowCount: budgetRowCount,
+          invalidReason: budgetScopeResolution.invalidReason,
+          reportPeriod,
+          scopeDescription: budgetScopeResolution.scopeLabel
+        }}
+      />
 
       <section>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">客房与收益</h2>
