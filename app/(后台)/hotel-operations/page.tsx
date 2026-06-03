@@ -29,15 +29,22 @@ import {
 import { useBudgetDataForScope } from "@/contexts/budget-data-supabase-context";
 import { resolveBudgetScopeFromQueryScope } from "@/lib/budget-scope";
 import { DEFAULT_BUDGET_VERSION } from "@/lib/budget-versions";
-import { DATA_CALIBER_RULES } from "@/lib/data-caliber";
 import { 全部门店值 } from "@/lib/store-master";
 import {
   getTrendSeriesFromSupabase,
   type DashboardTrendPoint
 } from "@/src/lib/dashboard-data-service";
 
+function displayMetricSourceLabel(change: string): string {
+  if (change === "actual_data") return "经营实际";
+  if (change === "budget_data") return "预算目标";
+  if (change === "mock demo") return "演示数据";
+  if (change === "budget_overrides") return "预算调整";
+  return change;
+}
+
 export default function HotelOperationsPage() {
-  const { storeId, reportPeriod } = useStorePeriod();
+  const { storeId, reportPeriod, periodLabel } = useStorePeriod();
   const { overrides: actualOverrides, mergeActualOverrides } = useActualOverrides();
   const { overrides: budgetOverrides } = useBudgetOverrides();
   const { stores: supabaseStores } = useActiveStores();
@@ -173,22 +180,34 @@ export default function HotelOperationsPage() {
     trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
 
   const dataTag = useDbActual ? "actual_data" : "mock demo";
+  const dataTagLabel = displayMetricSourceLabel(dataTag);
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold">酒店运营</h1>
-          <p className="text-sm text-muted-foreground">
-            仅含酒店门店；经营指标优先来自 actual_data。{DATA_CALIBER_RULES.hotelOpsRead}
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">酒店运营</h1>
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-900">
+              酒店经营
+            </span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            <span className="text-muted-foreground">当前范围：</span>
+            <span className="font-medium text-slate-800">{actualDataScopeLabel}</span>
+          </p>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            <span className="text-muted-foreground">当前账期：</span>
+            <span className="font-medium text-slate-800">{periodLabel}</span>
           </p>
         </div>
-        <div className="w-72">
+        <div className="w-full min-w-[200px] max-w-xs space-y-1.5">
+          <span className="text-xs font-medium text-muted-foreground">本页范围</span>
           <Select
             value={localHotel}
             onValueChange={(v) => setLocalHotel(v as "all" | string)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="h-10">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -233,57 +252,80 @@ export default function HotelOperationsPage() {
         }}
       />
 
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">客房与收益</h2>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section aria-labelledby="hotel-room-kpi">
+        <h2
+          id="hotel-room-kpi"
+          className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          客房与收益
+        </h2>
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <MetricCard
             标题="可售间夜数"
             数值={kpis.可售间夜.toLocaleString("zh-CN")}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
           <MetricCard
             标题="已售间数"
             数值={kpis.已售间数.toLocaleString("zh-CN")}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
           <MetricCard
             标题="入住率"
             数值={`${(kpis.入住率 * 100).toFixed(1)}%`}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
           <MetricCard
             标题="平均房价"
             数值={`¥ ${kpis.平均房价}`}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
-          <MetricCard 标题="RevPAR" 数值={`¥ ${kpis.revpar}`} 变化={dataTag} 趋势="neutral" />
+          <MetricCard
+            标题="RevPAR"
+            数值={`¥ ${kpis.revpar}`}
+            变化=""
+            趋势="neutral"
+            数据来源={dataTagLabel}
+          />
           <MetricCard
             标题="客房收入"
             数值={formatWan(kpis.客房收入)}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">预算完成率（仅对比，非经营来源）</h2>
-        <div className="grid gap-4 md:grid-cols-3">
+      <section aria-labelledby="hotel-budget-kpi">
+        <h2
+          id="hotel-budget-kpi"
+          className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          预算完成率（对比预算，非经营导入）
+        </h2>
+        <div className="grid gap-3 md:grid-cols-3">
           <MetricCard
             标题="本期实际收入（酒店）"
             数值={formatWan(hotelRevenueActual)}
-            变化={useDbActual ? "actual_data" : "mock demo"}
+            变化=""
             趋势="neutral"
+            数据来源={displayMetricSourceLabel(useDbActual ? "actual_data" : "mock demo")}
           />
           <MetricCard
             标题="本期预算收入（酒店）"
             数值={formatWan(budgetFin.营业收入)}
-            变化={useDbBudget ? "budget_data" : "budget_overrides"}
+            变化=""
             趋势="neutral"
+            数据来源={displayMetricSourceLabel(useDbBudget ? "budget_data" : "budget_overrides")}
           />
           <MetricCard
             标题="收入预算完成率"
@@ -294,59 +336,86 @@ export default function HotelOperationsPage() {
         </div>
       </section>
 
-      <section>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">费用</h2>
-        <div className="grid gap-4 md:grid-cols-3">
+      <section aria-labelledby="hotel-cost-kpi">
+        <h2
+          id="hotel-cost-kpi"
+          className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          费用
+        </h2>
+        <div className="grid gap-3 md:grid-cols-3">
           <MetricCard
             标题="华住管理费"
             数值={formatWan(kpis.华住管理费)}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
           <MetricCard
             标题="人力成本"
             数值={formatWan(kpis.人力成本)}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
           <MetricCard
             标题="能源费用"
             数值={formatWan(kpis.能源费用)}
-            变化={dataTag}
+            变化=""
             趋势="neutral"
+            数据来源={dataTagLabel}
           />
         </div>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-3">
-        <Card className="xl:col-span-2">
-          <CardHeader>
-            <CardTitle>酒店经营趋势（近 6 期 · 实际）</CardTitle>
+        <Card className="border-slate-200 shadow-sm xl:col-span-2">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">经营趋势</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              收入、成本、利润随账期变化（近 6 个账期）
+            </p>
           </CardHeader>
           <CardContent>
             <TrendChart data={trend} />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>单店摘要（演示）</CardTitle>
+        <Card className="border border-dashed border-slate-200 bg-muted/30 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              演示摘要（界面示例，非经营导入）
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <p className="rounded-md bg-secondary p-3">
+          <CardContent className="space-y-2.5 text-sm leading-relaxed">
+            <p className="rounded-md border border-slate-200/80 bg-background/80 p-2.5 text-slate-800">
               沐家·全季槐安西、雨航·全季中山西：ADR 与利润表现优于均值。
             </p>
-            <p className="rounded-md bg-secondary p-3">
+            <p className="rounded-md border border-slate-200/80 bg-background/80 p-2.5 text-slate-800">
               泽桐·星程中山西：入住率领先，房价带略低，适合加强协议价管理。
             </p>
           </CardContent>
         </Card>
       </section>
 
-      <ActualExcelImportPanel
-        mode="hotel"
-        existingOverrides={actualOverrides}
-        onImport={(entries) => mergeActualOverrides(entries)}
-      />
+      <details className="rounded-lg border border-dashed border-slate-200 bg-slate-50/50">
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-muted-foreground marker:content-none [&::-webkit-details-marker]:hidden">
+          旧版本地导入（临时查看）
+        </summary>
+        <div className="space-y-2 border-t border-slate-100 px-4 pb-4 pt-2">
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            旧版本地导入，仅用于临时查看；正式经营数据请使用
+            <a href="/operating-data-template" className="mx-1 text-primary underline">
+              经营数据导入
+            </a>
+            模板（42 列标准格式）。
+          </p>
+          <ActualExcelImportPanel
+            mode="hotel"
+            existingOverrides={actualOverrides}
+            onImport={(entries) => mergeActualOverrides(entries)}
+          />
+        </div>
+      </details>
     </div>
   );
 }
