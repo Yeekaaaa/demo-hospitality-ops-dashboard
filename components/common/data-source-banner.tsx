@@ -1,17 +1,14 @@
 "use client";
 
-import { Info } from "lucide-react";
 import type { ReportPeriod } from "@/lib/mock-analytics";
 import {
-  actualBannerUsesDemoTone,
-  buildActualBannerLine,
+  buildActualBannerDisplay,
   formatReportPeriodLabel,
   resolveActualBannerTone,
   type ActualBannerTone
 } from "@/lib/actual-data-source";
 import {
-  buildBudgetBannerLine,
-  budgetBannerUsesDemoTone,
+  buildBudgetBannerDisplay,
   resolveBudgetBannerTone,
   type BudgetDataHintState,
   type BudgetBannerTone
@@ -28,28 +25,32 @@ export type ActualBannerInput = {
   forceDemo?: boolean;
 };
 
-type BannerLine = {
+type BannerRow = {
   key: string;
-  label?: string;
-  text: string;
+  badge: string;
+  meta: string;
+  hint?: string;
   tone: ActualBannerTone | BudgetBannerTone;
 };
 
-function lineToneClass(tone: ActualBannerTone | BudgetBannerTone): string {
+function rowToneClass(tone: ActualBannerTone | BudgetBannerTone): string {
   if (tone === "loading") {
-    return "border-slate-200 bg-slate-50 text-slate-700";
+    return "border-slate-200/90 bg-slate-50 text-slate-800";
   }
   if (tone === "real") {
-    return "border-emerald-200 bg-emerald-50/90 text-emerald-950";
+    return "border-emerald-200/90 bg-emerald-50/80 text-emerald-950";
   }
-  if (tone === "demo" || tone === "hidden") {
-    return "border-amber-200 bg-amber-50 text-amber-950";
-  }
-  return "border-slate-200 bg-muted/50 text-muted-foreground";
+  return "border-amber-200/90 bg-amber-50/90 text-amber-950";
 }
 
-function isDemoTone(tone: ActualBannerTone | BudgetBannerTone): boolean {
-  return tone === "demo" || tone === "hidden";
+function badgeToneClass(tone: ActualBannerTone | BudgetBannerTone): string {
+  if (tone === "loading") {
+    return "bg-slate-200/80 text-slate-800";
+  }
+  if (tone === "real") {
+    return "bg-emerald-100 text-emerald-900";
+  }
+  return "bg-amber-100 text-amber-900";
 }
 
 type Props = {
@@ -61,14 +62,38 @@ type Props = {
   className?: string;
 };
 
+function BannerRowBlock({ row }: { row: BannerRow }) {
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap items-start gap-2 rounded-md border px-2.5 py-1.5 text-sm leading-snug",
+        rowToneClass(row.tone)
+      )}
+    >
+      <span
+        className={cn(
+          "shrink-0 rounded px-2 py-0.5 text-xs font-semibold tracking-wide",
+          badgeToneClass(row.tone)
+        )}
+      >
+        {row.badge}
+      </span>
+      <div className="min-w-0 flex-1 space-y-0.5">
+        <p className="font-medium">{row.meta}</p>
+        {row.hint ? <p className="text-xs leading-snug opacity-90">{row.hint}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 export function DataSourceBanner({ actual, budget, className }: Props) {
-  const lines: BannerLine[] = [];
+  const rows: BannerRow[] = [];
 
   if (actual) {
     const periodLabel = formatReportPeriodLabel(actual.reportPeriod);
     const tone = resolveActualBannerTone(actual);
     const withBudget = Boolean(budget);
-    const text = buildActualBannerLine({
+    const display = buildActualBannerDisplay({
       tone,
       periodLabel,
       scopeDescription: actual.scopeDescription,
@@ -76,67 +101,40 @@ export function DataSourceBanner({ actual, budget, className }: Props) {
       hasSupabaseEnv: actual.hasSupabaseEnv,
       compact: withBudget && !actual.forceDemo
     });
-    lines.push({
+    rows.push({
       key: "actual",
-      label: actual.forceDemo ? undefined : withBudget ? "实际" : undefined,
-      text,
+      badge: display.badge,
+      meta: display.meta,
+      hint: display.hint,
       tone
     });
   }
 
   if (budget) {
     const tone = resolveBudgetBannerTone(budget);
-    const text = buildBudgetBannerLine(budget, budget.reportPeriod, budget.scopeDescription);
-    if (text) {
-      lines.push({
+    const display = buildBudgetBannerDisplay(
+      budget,
+      budget.reportPeriod,
+      budget.scopeDescription
+    );
+    if (display) {
+      rows.push({
         key: "budget",
-        label: "预算",
-        text,
+        badge: display.badge,
+        meta: display.meta,
+        hint: display.hint,
         tone: tone === "hidden" ? "demo" : tone
       });
     }
   }
 
-  if (lines.length === 0) return null;
-
-  const anyDemo = lines.some((l) => {
-    if (l.key === "actual") {
-      return actualBannerUsesDemoTone(l.tone as ActualBannerTone, actual?.hasSupabaseEnv ?? false);
-    }
-    return budgetBannerUsesDemoTone(l.tone as BudgetBannerTone);
-  });
-  const anyLoading = lines.some((l) => l.tone === "loading");
-  const containerTone: ActualBannerTone | BudgetBannerTone = anyLoading
-    ? "loading"
-    : anyDemo
-      ? "demo"
-      : "real";
+  if (rows.length === 0) return null;
 
   return (
-    <div
-      role="status"
-      className={cn(
-        "rounded-md border px-3 py-2 text-sm",
-        lineToneClass(containerTone),
-        className
-      )}
-    >
-      <div className="flex gap-2">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 opacity-70" aria-hidden />
-        <div className="min-w-0 space-y-1.5">
-          {lines.map((line) => (
-            <p key={line.key} className="leading-snug">
-              {line.label ? (
-                <span className="font-medium">
-                  {line.label}：
-                  {isDemoTone(line.tone) ? "" : " "}
-                </span>
-              ) : null}
-              <span className={line.label ? undefined : "font-medium"}>{line.text}</span>
-            </p>
-          ))}
-        </div>
-      </div>
+    <div role="status" className={cn("space-y-1.5", className)} aria-live="polite">
+      {rows.map((row) => (
+        <BannerRowBlock key={row.key} row={row} />
+      ))}
     </div>
   );
 }

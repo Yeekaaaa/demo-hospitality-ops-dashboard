@@ -9,6 +9,13 @@ export type ActualDataSourceMode = "supabase" | "mock_fallback" | "mock_only";
 
 export type ActualBannerTone = "loading" | "real" | "demo";
 
+export type ActualBannerDisplay = {
+  badge: string;
+  /** 账期：YYYY-MM · 范围：… */
+  meta: string;
+  hint?: string;
+};
+
 export function resolveActualDataSourceMode(
   hasSupabaseEnv: boolean,
   useDbActual: boolean
@@ -17,13 +24,13 @@ export function resolveActualDataSourceMode(
   return useDbActual ? "supabase" : "mock_fallback";
 }
 
-/** @deprecated 技术向标签；页面展示请用 buildActualBannerLine */
+/** @deprecated 技术向标签；页面展示请用 actualBannerBadgeLabel / buildActualBannerDisplay */
 export function actualDataSourceLabel(mode: ActualDataSourceMode): string {
-  if (mode === "supabase") return "Supabase actual_data";
+  if (mode === "supabase") return "真实经营数据";
   if (mode === "mock_fallback") {
-    return "Mock demo data（已配置 Supabase，当前门店范围/账期无 actual_data 行）";
+    return "演示数据（该账期暂无已导入的经营数据）";
   }
-  return "Mock demo data（未配置 Supabase 环境变量）";
+  return "演示数据（未连接经营数据库）";
 }
 
 /** @deprecated 技术向；页面展示请用 formatReportPeriodLabel */
@@ -49,37 +56,73 @@ export function resolveActualBannerTone(params: {
   return params.useDbActual ? "real" : "demo";
 }
 
+export function actualBannerBadgeLabel(
+  tone: ActualBannerTone,
+  forceDemo?: boolean
+): string {
+  if (forceDemo) return "演示数据";
+  if (tone === "loading") return "加载中";
+  if (tone === "real") return "真实经营数据";
+  return "演示数据";
+}
+
+export function buildActualBannerDisplay(params: {
+  tone: ActualBannerTone;
+  periodLabel: string;
+  scopeDescription: string;
+  forceDemo?: boolean;
+  hasSupabaseEnv?: boolean;
+  compact?: boolean;
+}): ActualBannerDisplay {
+  const { tone, periodLabel, scopeDescription, forceDemo, hasSupabaseEnv, compact } = params;
+  const meta = `账期：${periodLabel} · 范围：${scopeDescription}`;
+
+  if (tone === "loading") {
+    return { badge: "加载中", meta };
+  }
+
+  if (tone === "real") {
+    return {
+      badge: "真实经营数据",
+      meta,
+      hint: compact ? undefined : "当前展示已导入的经营数据"
+    };
+  }
+
+  if (forceDemo) {
+    return {
+      badge: "演示数据",
+      meta,
+      hint: "该模块尚未接入经营导入，当前数字仅用于界面预览"
+    };
+  }
+
+  if (hasSupabaseEnv === false) {
+    return {
+      badge: "演示数据",
+      meta,
+      hint: "系统尚未连接经营数据库，导入后可查看真实经营数据"
+    };
+  }
+
+  return {
+    badge: "演示数据",
+    meta,
+    hint: "该账期暂无真实经营数据，当前数字仅用于界面预览，请勿作为经营决策依据"
+  };
+}
+
+/** @deprecated 页面展示请用 buildActualBannerDisplay */
 export function buildActualBannerLine(params: {
   tone: ActualBannerTone;
   periodLabel: string;
   scopeDescription: string;
   forceDemo?: boolean;
   hasSupabaseEnv?: boolean;
-  /** 与预算同行展示时使用短文案，并配合「实际：」前缀 */
   compact?: boolean;
 }): string {
-  const { tone, periodLabel, scopeDescription, forceDemo, hasSupabaseEnv, compact } = params;
-
-  if (forceDemo) {
-    return `餐饮模块当前为演示数据（尚未对接经营实际导入）· 当前账期：${periodLabel} · 范围：${scopeDescription}`;
-  }
-
-  if (tone === "loading") {
-    return `正在加载 ${periodLabel} 经营数据… · 范围：${scopeDescription}`;
-  }
-
-  if (tone === "real") {
-    if (compact) {
-      return `真实经营数据 · 账期 ${periodLabel} · 范围：${scopeDescription}`;
-    }
-    return `当前展示真实经营数据 · 账期 ${periodLabel} · 范围：${scopeDescription}`;
-  }
-
-  if (hasSupabaseEnv === false) {
-    return `当前为演示数据 · 系统尚未连接经营数据库，页面数字仅供界面预览。配置并导入经营数据后可查看真实结果。范围：${scopeDescription}`;
-  }
-
-  return `当前为演示数据 · 账期 ${periodLabel} 在所选范围内暂无已导入的经营实际数据，页面数字仅供界面预览，请勿作为决策依据。请到「经营数据模板」导入后再查看。范围：${scopeDescription}`;
+  const { badge, meta, hint } = buildActualBannerDisplay(params);
+  return hint ? `${badge} · ${meta} · ${hint}` : `${badge} · ${meta}`;
 }
 
 export function actualBannerUsesDemoTone(tone: ActualBannerTone, hasSupabaseEnv: boolean): boolean {

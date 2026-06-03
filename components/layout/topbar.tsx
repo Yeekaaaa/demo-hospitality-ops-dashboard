@@ -17,6 +17,7 @@ import {
   TOPBAR_FISCAL_YEAR_OPTIONS
 } from "@/lib/topbar-period-options";
 import { formatStoreOptionLabel } from "@/src/lib/supabase";
+import { cn } from "@/lib/utils";
 
 /** 预算管理、财务报表使用页面内「筛选与账期」，不展示顶栏全局门店/期间 */
 function shouldHideGlobalTopbarFilters(pathname: string | null): boolean {
@@ -36,6 +37,8 @@ function isRestaurantOperationsPath(pathname: string | null): boolean {
     pathname === "/restaurant-operations" || pathname.startsWith("/restaurant-operations/")
   );
 }
+
+const selectTriggerClass = "h-10";
 
 export function Topbar() {
   const pathname = usePathname();
@@ -89,18 +92,18 @@ export function Topbar() {
   ]);
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background/90 px-6 py-3 backdrop-blur">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-3">
+    <header className="sticky top-0 z-10 border-b bg-background/90 px-4 py-2.5 backdrop-blur sm:px-6 sm:py-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3">
           {hideGlobalFilters ? (
-            <span className="text-sm text-muted-foreground">本页使用「筛选与账期」卡片</span>
+            <span className="text-sm text-muted-foreground">本页使用页面内「筛选与账期」</span>
           ) : (
             <>
-              <div className="min-w-[200px] max-w-[280px] flex-1 sm:flex-none">
+              <div className="w-full min-w-[180px] max-w-[280px] sm:w-auto sm:flex-none">
                 {restaurantOpsPage ? (
                   restaurantStores.length > 1 ? (
                     <Select value={storeId} onValueChange={setStoreId}>
-                      <SelectTrigger>
+                      <SelectTrigger className={selectTriggerClass}>
                         <SelectValue placeholder="选择餐饮门店" />
                       </SelectTrigger>
                       <SelectContent>
@@ -113,7 +116,9 @@ export function Topbar() {
                     </Select>
                   ) : (
                     <span
-                      className="flex h-10 items-center rounded-md border bg-background px-3 text-sm font-medium"
+                      className={cn(
+                        "flex h-10 w-full items-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm"
+                      )}
                       aria-label="当前餐饮门店"
                     >
                       {restaurantStoreLabel}
@@ -121,7 +126,7 @@ export function Topbar() {
                   )
                 ) : (
                   <Select value={storeId} onValueChange={setStoreId}>
-                    <SelectTrigger>
+                    <SelectTrigger className={selectTriggerClass}>
                       <SelectValue placeholder="选择门店" />
                     </SelectTrigger>
                     <SelectContent>
@@ -135,13 +140,17 @@ export function Topbar() {
                   </Select>
                 )}
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="w-[88px]">
+
+              <div
+                className="flex flex-wrap items-center gap-2 rounded-md border border-border/80 bg-muted/30 px-2 py-1"
+                title="经营数据导入以月度账期为主，请与 Excel 模板中的账期一致"
+              >
+                <div className="w-[84px] shrink-0 sm:w-[88px]">
                   <Select
                     value={String(fiscalYear)}
                     onValueChange={(v) => setFiscalYear(Number(v))}
                   >
-                    <SelectTrigger aria-label="选择年份">
+                    <SelectTrigger className={cn(selectTriggerClass, "bg-background")} aria-label="选择年份">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -153,12 +162,12 @@ export function Topbar() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="w-[88px]">
+                <div className="w-[84px] shrink-0 sm:w-[88px]">
                   <Select
                     value={String(fiscalMonth)}
                     onValueChange={(v) => setFiscalMonth(Number(v))}
                   >
-                    <SelectTrigger aria-label="选择月份">
+                    <SelectTrigger className={cn(selectTriggerClass, "bg-background")} aria-label="选择月份">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -170,29 +179,38 @@ export function Topbar() {
                     </SelectContent>
                   </Select>
                 </div>
+                <span className="shrink-0 px-1 text-sm font-semibold tabular-nums text-foreground">
+                  账期 {periodLabel}
+                </span>
               </div>
-              <span className="text-xs text-muted-foreground sm:inline">
-                当前账期：{periodLabel}
-              </span>
-              <span className="hidden text-xs text-muted-foreground lg:inline">
-                经营导入以月度为主
-              </span>
             </>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <Badge className="bg-blue-50 text-blue-700">权限角色：老板</Badge>
-          <button className="relative rounded-full bg-white p-2 shadow-soft" type="button">
+
+        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+          <Badge className="hidden bg-blue-50 text-blue-800 sm:inline-flex">
+            老板
+          </Badge>
+          <button
+            className="relative rounded-full border bg-background p-2 shadow-sm transition-colors hover:bg-muted/50"
+            type="button"
+            aria-label="通知"
+          >
             <Bell className="h-4 w-4" />
-            <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] text-white">6</span>
+            <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1.5 text-[10px] text-white">
+              6
+            </span>
           </button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button type="button" className="flex items-center gap-2 rounded-md border bg-white px-2 py-1.5">
-                <Avatar>
-                  <AvatarFallback>张总</AvatarFallback>
+              <button
+                type="button"
+                className="flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 shadow-sm transition-colors hover:bg-muted/50"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="text-xs">张总</AvatarFallback>
                 </Avatar>
-                <span className="text-sm">张明</span>
+                <span className="hidden text-sm sm:inline">张明</span>
                 <ChevronDown className="h-4 w-4 opacity-60" />
               </button>
             </DropdownMenuTrigger>
