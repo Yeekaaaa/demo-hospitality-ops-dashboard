@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, CalendarDays, ChevronDown } from "lucide-react";
+import { Bell, ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,14 +11,11 @@ import { useActiveStores } from "@/contexts/active-stores-context";
 import { useStorePeriod } from "@/contexts/store-period-context";
 import { sanitizeTopbarStoreId } from "@/lib/budget-filter";
 import { 全部门店值 } from "@/lib/store-master";
-import type { PeriodGranularity } from "@/lib/mock-analytics";
+import {
+  TOPBAR_FISCAL_MONTH_OPTIONS,
+  TOPBAR_FISCAL_YEAR_OPTIONS
+} from "@/lib/topbar-period-options";
 import { formatStoreOptionLabel } from "@/src/lib/supabase";
-
-const 时间选项: { value: PeriodGranularity; label: string }[] = [
-  { value: "month", label: "本月" },
-  { value: "quarter", label: "本季度" },
-  { value: "year", label: "本年度" }
-];
 
 /** 预算管理、财务报表使用页面内「筛选与账期」，不展示顶栏全局门店/期间 */
 function shouldHideGlobalTopbarFilters(pathname: string | null): boolean {
@@ -38,8 +35,10 @@ export function Topbar() {
   const {
     storeId,
     setStoreId,
-    periodGranularity,
-    setPeriodGranularity,
+    fiscalYear,
+    setFiscalYear,
+    fiscalMonth,
+    setFiscalMonth,
     periodLabel
   } = useStorePeriod();
 
@@ -59,7 +58,7 @@ export function Topbar() {
             <span className="text-sm text-muted-foreground">本页使用「筛选与账期」卡片</span>
           ) : (
             <>
-              <div className="min-w-[220px] max-w-[280px]">
+              <div className="min-w-[200px] max-w-[280px] flex-1 sm:flex-none">
                 <Select value={storeId} onValueChange={setStoreId}>
                   <SelectTrigger>
                     <SelectValue placeholder="选择门店" />
@@ -74,25 +73,48 @@ export function Topbar() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-44">
-                <Select
-                  value={periodGranularity}
-                  onValueChange={(v) => setPeriodGranularity(v as PeriodGranularity)}
-                >
-                  <SelectTrigger>
-                    <CalendarDays className="mr-2 h-4 w-4 shrink-0 opacity-70" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {时间选项.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="w-[88px]">
+                  <Select
+                    value={String(fiscalYear)}
+                    onValueChange={(v) => setFiscalYear(Number(v))}
+                  >
+                    <SelectTrigger aria-label="选择年份">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TOPBAR_FISCAL_YEAR_OPTIONS.map((y) => (
+                        <SelectItem key={y} value={String(y)}>
+                          {y} 年
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-[88px]">
+                  <Select
+                    value={String(fiscalMonth)}
+                    onValueChange={(v) => setFiscalMonth(Number(v))}
+                  >
+                    <SelectTrigger aria-label="选择月份">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TOPBAR_FISCAL_MONTH_OPTIONS.map((m) => (
+                        <SelectItem key={m} value={String(m)}>
+                          {String(m).padStart(2, "0")} 月
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <span className="hidden text-xs text-muted-foreground sm:inline">当前账期：{periodLabel}</span>
+              <span className="text-xs text-muted-foreground sm:inline">
+                当前账期：{periodLabel}
+              </span>
+              <span className="hidden text-xs text-muted-foreground lg:inline">
+                经营导入以月度为主
+              </span>
             </>
           )}
         </div>

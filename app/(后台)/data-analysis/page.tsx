@@ -31,8 +31,12 @@ import {
 } from "@/lib/dashboard-metrics";
 import { summarizeActualDataAssetRows } from "@/lib/actual-data-asset-aggregate";
 import { formatWan } from "@/lib/mock-analytics";
+import { ActualDataSourceHint } from "@/components/common/actual-data-source-hint";
+import { useActiveStores } from "@/contexts/active-stores-context";
 import { useActualOverrides } from "@/contexts/actual-overrides-context";
 import { useStorePeriod } from "@/contexts/store-period-context";
+import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-context";
+import { dashboardToActualDataScope } from "@/lib/dashboard-actual-scope";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -65,7 +69,32 @@ function emptySnapshot(): CockpitSnapshot {
 export default function DataAnalysisPage() {
   const { storeId, reportPeriod, periodLabel } = useStorePeriod();
   const { overrides: actualOverrides } = useActualOverrides();
+  const { stores: supabaseStores } = useActiveStores();
   const prevReportPeriod = useMemo(() => getPreviousReportPeriod(reportPeriod), [reportPeriod]);
+
+  const actualDataScope = useMemo(
+    () => dashboardToActualDataScope(storeId, ANALYSIS_BOARD, supabaseStores),
+    [storeId, supabaseStores]
+  );
+
+  const actualDataScopeLabel = useMemo(() => {
+    if (typeof actualDataScope === "string") {
+      const s = supabaseStores.find((x) => x.id === actualDataScope);
+      return s ? `${s.name}（${actualDataScope.slice(0, 8)}…）` : actualDataScope;
+    }
+    if (Array.isArray(actualDataScope)) {
+      return `${actualDataScope.length} 家门店（经营门店）`;
+    }
+    return "—";
+  }, [actualDataScope, supabaseStores]);
+
+  const {
+    hasSupabaseEnv: hasActualDataEnv,
+    hasDbRows,
+    loading: actualDataLoading
+  } = useActualDataSupabaseForScope(actualDataScope, reportPeriod);
+
+  const useDbActual = hasActualDataEnv && hasDbRows;
 
   const [cockpitFromDb, setCockpitFromDb] = useState<CockpitSnapshot | null>(null);
   useEffect(() => {
@@ -291,6 +320,14 @@ export default function DataAnalysisPage() {
           本页与驾驶舱共用 cockpit 聚合与门店排行口径，侧重呈现经营表现、盈利质量、改进抓手与增长路径，便于对内对齐与对外沟通。观察窗口：{periodLabel}
           （门店范围与账期与顶部导航一致）。
         </p>
+        <ActualDataSourceHint
+          className="mt-2"
+          hasSupabaseEnv={hasActualDataEnv}
+          loading={actualDataLoading}
+          useDbActual={useDbActual}
+          reportPeriod={reportPeriod}
+          scopeDescription={actualDataScopeLabel}
+        />
       </header>
 
       {/* 1. Investment Highlights */}
