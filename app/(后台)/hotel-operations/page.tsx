@@ -6,7 +6,6 @@ import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { MetricCard } from "@/components/common/metric-card";
 import { TrendChart } from "@/components/common/trend-chart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActualOverrides } from "@/contexts/actual-overrides-context";
 import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-context";
 import { useActiveStores } from "@/contexts/active-stores-context";
@@ -49,15 +48,6 @@ export default function HotelOperationsPage() {
   const { overrides: budgetOverrides } = useBudgetOverrides();
   const { stores: supabaseStores } = useActiveStores();
 
-  const hotelStoreOptions = useMemo(
-    () =>
-      getActiveHotelStoreIds(supabaseStores).map((id) => {
-        const s = supabaseStores.find((x) => x.id === id);
-        return { id, label: s ? getStoreDisplayName(s) : id };
-      }),
-    [supabaseStores]
-  );
-
   const effectiveScope = useMemo<"all" | string>(() => {
     if (storeId === 全部门店值) return "all";
     const hotelIds = getActiveHotelStoreIds(supabaseStores);
@@ -65,14 +55,19 @@ export default function HotelOperationsPage() {
     return "all";
   }, [storeId, supabaseStores]);
 
-  const [localHotel, setLocalHotel] = useState<"all" | string>(effectiveScope);
-  useEffect(() => {
-    setLocalHotel(effectiveScope);
-  }, [effectiveScope]);
+  const topbarIsRestaurantStore =
+    storeId !== 全部门店值 &&
+    !getActiveHotelStoreIds(supabaseStores).includes(storeId);
+
+  const headerScopeLabel = useMemo(() => {
+    if (storeId === 全部门店值 || topbarIsRestaurantStore) return "全部酒店";
+    const s = supabaseStores.find((x) => x.id === storeId);
+    return s ? getStoreDisplayName(s) : "全部酒店";
+  }, [storeId, supabaseStores, topbarIsRestaurantStore]);
 
   const actualDataScope = useMemo(
-    () => hotelOperationsToActualDataScope(localHotel, supabaseStores),
-    [localHotel, supabaseStores]
+    () => hotelOperationsToActualDataScope(effectiveScope, supabaseStores),
+    [effectiveScope, supabaseStores]
   );
 
   const actualDataScopeLabel = useMemo(() => {
@@ -95,7 +90,7 @@ export default function HotelOperationsPage() {
 
   const useDbActual = hasActualDataEnv && hasDbRows;
 
-  const budgetMockScope = localHotel === "all" ? 全部门店值 : localHotel;
+  const budgetMockScope = effectiveScope === "all" ? 全部门店值 : effectiveScope;
 
   const budgetScopeResolution = useMemo(
     () => resolveBudgetScopeFromQueryScope(actualDataScope, supabaseStores),
@@ -120,11 +115,11 @@ export default function HotelOperationsPage() {
   const mockKpis = useMemo(
     () =>
       getHotelOperationsKpis(
-        localHotel === "all" ? "all" : localHotel,
+        effectiveScope === "all" ? "all" : effectiveScope,
         reportPeriod,
         actualOverrides
       ),
-    [localHotel, reportPeriod, actualOverrides]
+    [effectiveScope, reportPeriod, actualOverrides]
   );
 
   const kpis = useMemo(() => {
@@ -137,10 +132,10 @@ export default function HotelOperationsPage() {
       const rev = operatingSubjects["营业收入"] ?? operatingSubjects["客房收入"];
       return rev != null && Number.isFinite(rev) ? rev : 0;
     }
-    const scope = localHotel === "all" ? 全部门店值 : localHotel;
+    const scope = effectiveScope === "all" ? 全部门店值 : effectiveScope;
     const line = getActualAggregated(scope, reportPeriod, actualOverrides);
     return line.营业收入;
-  }, [useDbActual, operatingSubjects, localHotel, reportPeriod, actualOverrides]);
+  }, [useDbActual, operatingSubjects, effectiveScope, reportPeriod, actualOverrides]);
 
   const revenueCompletion = useMemo(() => {
     const b = budgetFin.营业收入;
@@ -153,7 +148,7 @@ export default function HotelOperationsPage() {
     let cancelled = false;
     setTrendFromDb(null);
     if (!hasActualDataEnv) return;
-    const trendStoreId = localHotel === "all" ? 全部门店值 : localHotel;
+    const trendStoreId = effectiveScope === "all" ? 全部门店值 : effectiveScope;
     getTrendSeriesFromSupabase(trendStoreId, "hotelBoard", reportPeriod)
       .then((list) => {
         if (!cancelled) setTrendFromDb(list && list.length > 0 ? list : null);
@@ -164,17 +159,17 @@ export default function HotelOperationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [hasActualDataEnv, reportPeriod, localHotel]);
+  }, [hasActualDataEnv, reportPeriod, effectiveScope]);
 
   const mockTrend = useMemo(() => {
-    const scope = localHotel === "all" ? 全部门店值 : localHotel;
+    const scope = effectiveScope === "all" ? 全部门店值 : effectiveScope;
     return getTrendSeries(scope, undefined, actualOverrides).map((r) => ({
       周期: r.周期,
       收入: r.实际收入,
       成本: r.实际成本,
       利润: r.实际利润
     }));
-  }, [localHotel, actualOverrides]);
+  }, [effectiveScope, actualOverrides]);
 
   const trend =
     trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
@@ -194,40 +189,24 @@ export default function HotelOperationsPage() {
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
             <span className="text-muted-foreground">当前范围：</span>
-            <span className="font-medium text-slate-800">{actualDataScopeLabel}</span>
+            <span className="font-medium text-slate-800">{headerScopeLabel}</span>
           </p>
           <p className="mt-0.5 text-sm text-muted-foreground">
             <span className="text-muted-foreground">当前账期：</span>
             <span className="font-medium text-slate-800">{periodLabel}</span>
           </p>
+          <p className="mt-1 text-xs text-muted-foreground">门店与账期请在顶部导航选择。</p>
         </div>
-        <div className="w-full min-w-[200px] max-w-xs space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">本页范围</span>
-          <Select
-            value={localHotel}
-            onValueChange={(v) => setLocalHotel(v as "all" | string)}
-          >
-            <SelectTrigger className="h-10">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">全部酒店</SelectItem>
-              {hotelStoreOptions.map((h) => (
-                <SelectItem key={h.id} value={h.id}>
-                  {h.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <div className="flex h-10 min-w-[200px] items-center rounded-md border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-800">
+          {headerScopeLabel}
         </div>
       </div>
 
-      {storeId !== 全部门店值 &&
-        !getActiveHotelStoreIds(supabaseStores).includes(storeId) && (
+      {topbarIsRestaurantStore ? (
           <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-            当前顶部筛选为餐饮门店，本页已按「全部酒店」汇总展示。
+            当前顶栏选择为餐饮门店，酒店模块展示全部酒店。
           </p>
-        )}
+        ) : null}
 
       <DataSourceBanner
         actual={{
