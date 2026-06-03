@@ -7,10 +7,18 @@ export function TrendChart({
 }: {
   data: Array<{ 周期: string; 收入: number; 成本: number; 利润: number }>;
 }) {
+  const safe = Array.isArray(data) && data.length > 0 ? data : [];
+  if (safe.length === 0) {
+    return (
+      <div className="flex h-[320px] w-full items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+        暂无数据
+      </div>
+    );
+  }
   return (
     <div className="h-[320px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data}>
+        <LineChart data={safe}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
           <XAxis dataKey="周期" stroke="#64748b" />
           <YAxis stroke="#64748b" />

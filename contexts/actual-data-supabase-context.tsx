@@ -58,12 +58,15 @@ export function ActualDataSupabaseProvider({
   const load = useCallback(async () => {
     if (!hasSupabaseEnv) {
       setRows([]);
+      setLoading(false);
       return;
     }
     setLoading(true);
     try {
       const data = await getActualDataRowsForPeriodWithStores(reportPeriod, storeId);
       setRows(data);
+    } catch {
+      setRows([]);
     } finally {
       setLoading(false);
     }
@@ -146,20 +149,24 @@ export function useActualDataSupabaseForScope(
   const load = useCallback(async () => {
     if (!hasSupabaseEnv) {
       setRows([]);
+      setLoading(false);
       return;
     }
     if (Array.isArray(storeScope) && storeScope.length === 0) {
       setRows([]);
+      setLoading(false);
       return;
     }
     setLoading(true);
     try {
       const data = await getActualDataRowsForPeriodWithStores(reportPeriod, storeScope);
       setRows(data);
+    } catch {
+      setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [hasSupabaseEnv, reportPeriod, scopeKey, storeScope]);
+  }, [hasSupabaseEnv, reportPeriod, scopeKey]);
 
   useEffect(() => {
     void load();

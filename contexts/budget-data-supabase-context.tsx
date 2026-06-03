@@ -64,10 +64,14 @@ export function useBudgetDataForScope(
             : "agg")
         : "invalid";
 
+  const scopeMode = scopeResolution.mode;
+  const scopeInvalidReason = scopeResolution.invalidReason;
+
   const load = useCallback(async () => {
-    if (!hasSupabaseEnv || scopeResolution.mode === "invalid") {
+    if (!hasSupabaseEnv || scopeMode === "invalid") {
       setRows([]);
-      setQueryError(scopeResolution.invalidReason);
+      setQueryError(scopeInvalidReason);
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -79,10 +83,13 @@ export function useBudgetDataForScope(
       );
       setRows(result.rows);
       setQueryError(result.error);
+    } catch {
+      setRows([]);
+      setQueryError("budget_data 查询失败");
     } finally {
       setLoading(false);
     }
-  }, [hasSupabaseEnv, scopeResolution, reportPeriod, budgetVersion, scopeKey]);
+  }, [hasSupabaseEnv, scopeMode, scopeInvalidReason, scopeKey, reportPeriod, budgetVersion]);
 
   useEffect(() => {
     void load();

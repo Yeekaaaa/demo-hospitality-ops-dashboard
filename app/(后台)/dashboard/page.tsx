@@ -226,7 +226,8 @@ export default function DashboardPage() {
     () => getMockCockpitTrendSeries(storeId, boardType, reportPeriod, actualOverrides),
     [storeId, boardType, reportPeriod, actualOverrides]
   );
-  const trend = trendFromDb ?? (useDbActual ? [] : mockTrend);
+  const trend =
+    trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
 
   const [cockpitRankingDb, setCockpitRankingDb] = useState<CockpitStoreRankingRow[] | null>(null);
   useEffect(() => {

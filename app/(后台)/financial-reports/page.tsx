@@ -220,7 +220,9 @@ export default function FinancialReportsPage() {
     if (useDbActual) {
       return financialLineFromOperatingSubjectsOnly(operatingSubjects);
     }
-    return getActualAggregatedByStoreIds(scopeIds, reportPeriod, actualOverrides);
+    const mockIds =
+      scopeIds.length > 0 ? scopeIds : filterActiveMockStores().map((s) => s.id);
+    return getActualAggregatedByStoreIds(mockIds, reportPeriod, actualOverrides);
   }, [scopeIds, reportPeriod, actualOverrides, operatingSubjects, useDbActual]);
 
   const variance = useMemo(() => {

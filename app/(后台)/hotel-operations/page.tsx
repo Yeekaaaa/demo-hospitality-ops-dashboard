@@ -170,7 +170,8 @@ export default function HotelOperationsPage() {
     }));
   }, [localHotel, actualOverrides]);
 
-  const trend = trendFromDb ?? (useDbActual ? [] : mockTrend);
+  const trend =
+    trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
 
   const dataTag = useDbActual ? "actual_data" : "mock demo";
 
