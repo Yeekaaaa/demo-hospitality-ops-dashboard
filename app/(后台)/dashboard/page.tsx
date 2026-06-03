@@ -38,7 +38,6 @@ import {
   resolveBudgetTotals
 } from "@/lib/actual-vs-budget-kpi";
 import { DEFAULT_BUDGET_VERSION, getBudgetVersionLabel } from "@/lib/budget-versions";
-import { DATA_CALIBER_RULES } from "@/lib/data-caliber";
 import { useBudgetOverrides } from "@/contexts/budget-overrides-context";
 import { useBudgetDataForScope } from "@/contexts/budget-data-supabase-context";
 import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-context";
@@ -81,6 +80,13 @@ function resolveRankingBoardScope(
 }
 
 type RankTab = "revenue" | "profit" | "margin";
+
+/** 预算对比卡底部标签：避免 actual_data 等技术词露出 */
+function metricCardFooterLabel(change: string): string {
+  if (change === "actual_data") return "经营实际";
+  if (change === "budget_data") return "预算目标";
+  return change;
+}
 
 function emptySnapshot(): CockpitSnapshot {
   return {
@@ -415,52 +421,40 @@ export default function DashboardPage() {
   ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">经营驾驶舱</h1>
-            <p className="text-base leading-relaxed text-muted-foreground">
-              面向老板的收入、利润、效率与风险总览 · 当前范围：{ACTIVE_STORE_SCOPE_SHORT_LABEL}（
-              {ACTIVE_STORE_SCOPE_DETAIL_LABEL}）
-            </p>
-          </div>
-          <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="whitespace-nowrap"
-              onClick={handleExportBossOnePager}
-            >
-              导出老板一页纸
-            </Button>
-            <div className="w-[160px] min-w-[140px]">
-              <Select value={boardType} onValueChange={(v) => setBoardType(v as BoardType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部门店</SelectItem>
-                  <SelectItem value="hotelBoard">酒店看板</SelectItem>
-                  <SelectItem value="restaurantBoard">餐饮看板</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
+            经营驾驶舱
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {scopeLabel} · 账期 {periodLabel} · {ACTIVE_STORE_SCOPE_SHORT_LABEL}（
+            {ACTIVE_STORE_SCOPE_DETAIL_LABEL}）
+          </p>
+        </div>
+        <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="whitespace-nowrap"
+            onClick={handleExportBossOnePager}
+          >
+            导出老板一页纸
+          </Button>
+          <div className="w-[160px] min-w-[140px]">
+            <Select value={boardType} onValueChange={(v) => setBoardType(v as BoardType)}>
+              <SelectTrigger className="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">全部门店</SelectItem>
+                <SelectItem value="hotelBoard">酒店看板</SelectItem>
+                <SelectItem value="restaurantBoard">餐饮看板</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
-        <p className="mt-2 text-base leading-relaxed text-muted-foreground">
-          门店范围：{scopeLabel} · 当前账期：{periodLabel}（门店与月/季/年粒度请在顶部导航选择）
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {DATA_CALIBER_RULES.dashboardRead}（{getBudgetVersionLabel(DEFAULT_BUDGET_VERSION)}）
-        </p>
-        {snapshotUsesSupabase ? (
-          <p className="mt-1 text-xs text-emerald-800">
-            收入/利润/出租率/RevPAR 等指标已按 actual_data 聚合
-            {cockpitFromDb ? "（含环比/同比多期）" : "（仅当期科目，环比/同比需多期数据）"}。
-          </p>
-        ) : null}
       </div>
 
       <DataSourceBanner
@@ -486,35 +480,14 @@ export default function DashboardPage() {
         }}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">本期实际 vs 预算目标</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            实际：{useDbActual ? "Supabase actual_data" : "Mock demo data"} · 预算：
-            {useDbBudget ? "Supabase budget_data" : "budget_overrides / Mock"}（
-            {getBudgetVersionLabel(DEFAULT_BUDGET_VERSION)}，不写入 actual_data）
-          </p>
-        </CardHeader>
-        <CardContent>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {bossActualVsBudget.cards.map((k) => (
-              <MetricCard key={k.标题} {...k} />
-            ))}
-          </section>
-          {bossActualVsBudget.alerts.length > 0 ? (
-            <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
-              <p className="text-sm font-medium text-amber-900">偏差预警</p>
-              <ul className="mt-1 list-disc pl-5 text-sm text-amber-800">
-                {bossActualVsBudget.alerts.map((line) => (
-                  <li key={line}>{line}</li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <section aria-labelledby="cockpit-primary-kpi">
+        <h2
+          id="cockpit-primary-kpi"
+          className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground"
+        >
+          本期经营结果
+        </h2>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <ExecutiveKpiCard
           title="总收入"
           value={formatWan(snapshot.current.revenue)}
@@ -582,7 +555,40 @@ export default function DashboardPage() {
             />
           </>
         )}
+        </div>
       </section>
+
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">本期实际 vs 预算目标</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            对比本账期预算目标（{getBudgetVersionLabel(DEFAULT_BUDGET_VERSION)}）
+          </p>
+        </CardHeader>
+        <CardContent>
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {bossActualVsBudget.cards.map((k) => (
+              <MetricCard
+                key={k.标题}
+                标题={k.标题}
+                数值={k.数值}
+                变化={metricCardFooterLabel(k.变化)}
+                趋势={k.趋势}
+              />
+            ))}
+          </section>
+          {bossActualVsBudget.alerts.length > 0 ? (
+            <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
+              <p className="text-sm font-medium text-amber-900">偏差预警</p>
+              <ul className="mt-1 list-disc pl-5 text-sm text-amber-800">
+                {bossActualVsBudget.alerts.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
 
       <BossCockpitBriefingCard
         periodLabel={periodLabel}
@@ -593,53 +599,66 @@ export default function DashboardPage() {
         alerts={alerts}
       />
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <MetricCard
-          标题="库存预警"
-          数值={`${kpis.库存预警条数} 条`}
-          变化="含低库存与临期"
-          趋势="neutral"
-        />
-        <MetricCard
-          标题="待审批"
-          数值={`${kpis.待审批项} 项`}
-          变化="报销 / 采购 / 请假"
-          趋势="neutral"
-        />
-        <MetricCard
-          标题="今日在岗人数"
-          数值={`${kpis.今日在岗} 人`}
-          变化="含酒店与餐饮一线"
-          趋势="neutral"
-        />
-      </section>
-
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2 border-slate-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-medium">收入 / 成本 / 利润趋势（近 6 个账期 · 实际）</CardTitle>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-medium">
+              收入 / 成本 / 利润趋势（近 6 个账期）
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <CockpitTrendChart data={trend} />
           </CardContent>
         </Card>
-        <Card className="border-slate-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-medium">库存与审批摘要</CardTitle>
+        <Card className="border border-dashed border-slate-200 bg-muted/30 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              演示摘要（界面示例，非经营导入）
+            </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 text-base leading-relaxed">
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-amber-900">
+          <CardContent className="space-y-2.5 text-sm leading-relaxed">
+            <div className="rounded-md border border-amber-200/80 bg-amber-50/80 p-2.5 text-amber-950">
               西北赋：调味品批次临期 3 批，建议优先出库。
             </div>
-            <div className="rounded-md border border-red-200 bg-red-50 p-3 text-red-900">
+            <div className="rounded-md border border-red-200/80 bg-red-50/80 p-2.5 text-red-900">
               沐家·全季槐安西：布草低于安全库存，已生成补货建议。
             </div>
-            <div className="rounded-md bg-secondary p-3 text-muted-foreground">
+            <div className="rounded-md bg-muted/50 p-2.5 text-muted-foreground">
               待审批：报销 2 单、采购申请 2 单、请假 1 单，预计今日内处理完毕。
             </div>
           </CardContent>
         </Card>
       </section>
+
+      <Card className="border border-dashed border-slate-200/90 bg-slate-50/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
+            运营演示指标（待接入真实业务数据）
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <section className="grid gap-3 sm:grid-cols-3">
+            <MetricCard
+              标题="库存预警"
+              数值={`${kpis.库存预警条数} 条`}
+              变化="演示"
+              趋势="neutral"
+            />
+            <MetricCard
+              标题="待审批"
+              数值={`${kpis.待审批项} 项`}
+              变化="演示"
+              趋势="neutral"
+            />
+            <MetricCard
+              标题="今日在岗人数"
+              数值={`${kpis.今日在岗} 人`}
+              变化="演示"
+              趋势="neutral"
+            />
+          </section>
+        </CardContent>
+      </Card>
 
       <Card className="border-slate-200 shadow-sm">
         <CardHeader>
@@ -858,14 +877,15 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <Card className="border-slate-200 border-dashed bg-slate-50/60 shadow-sm">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-slate-800">数据口径说明</CardTitle>
-          <p className="text-sm leading-6 text-muted-foreground">
-            与当前页 KPI、趋势及排行一致，便于会上对齐口径；金额底层为元，卡片与表格展示为万元。
-          </p>
-        </CardHeader>
-        <CardContent className="text-sm leading-7 text-slate-700">
+      <details className="group rounded-md border border-dashed border-slate-200 bg-slate-50/60 shadow-sm">
+        <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-slate-800 marker:content-none [&::-webkit-details-marker]:hidden">
+          <span className="text-muted-foreground group-open:hidden">展开数据口径说明</span>
+          <span className="hidden group-open:inline">收起数据口径说明</span>
+          <span className="ml-2 text-xs font-normal text-muted-foreground">
+            （金额展示为万元，与导入模板「元」一致）
+          </span>
+        </summary>
+        <CardContent className="border-t border-slate-100 px-4 pb-4 pt-2 text-sm leading-7 text-slate-700">
           <ul className="list-disc space-y-3 pl-5 marker:text-slate-400">
             <li>
               <span className="font-medium text-slate-800">金额单位：</span>
@@ -907,7 +927,7 @@ export default function DashboardPage() {
             </li>
           </ul>
         </CardContent>
-      </Card>
+      </details>
     </div>
   );
 }

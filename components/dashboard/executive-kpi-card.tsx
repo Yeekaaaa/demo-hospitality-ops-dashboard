@@ -66,12 +66,12 @@ export function ExecutiveKpiCard({
 }) {
   const momLabel = granularity === "year" ? "较上年" : "环比";
   return (
-    <Card className="border-slate-200 shadow-sm">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-medium text-muted-foreground">{title}</CardTitle>
+    <Card className="border-slate-200 bg-card shadow-sm ring-1 ring-slate-100">
+      <CardHeader className="pb-1.5 pt-4">
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3.5">
-        <p className="text-3xl font-semibold tracking-tight text-slate-900">{value}</p>
+      <CardContent className="space-y-3 pb-4">
+        <p className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{value}</p>
         <div className="space-y-2 border-t border-slate-100 pt-3">
           <DeltaRow label={momLabel} current={current} previous={previous} invert={invert} />
           <DeltaRow label="同比" current={current} previous={yearAgo} invert={invert} />
