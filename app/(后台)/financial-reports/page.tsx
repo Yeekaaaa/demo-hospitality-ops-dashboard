@@ -49,7 +49,6 @@ import {
 } from "@/lib/actual-vs-budget-kpi";
 import { getBudgetFinancialLinesByPeriodValues } from "@/src/lib/budget-data-service";
 import { buildFullBudgetVariance } from "@/lib/budget-variance";
-import { DATA_CALIBER_RULES } from "@/lib/data-caliber";
 import { checkTrendQuality } from "@/lib/data-quality";
 import { dbPeriodToReportPeriod, reportPeriodToDbPeriod } from "@/lib/dashboard-metrics";
 import { isStoreOpenInPeriod, trendPeriodsForAllStores, trendPeriodsForSingleStore } from "@/lib/trend-periods";
@@ -76,6 +75,25 @@ import {
 } from "@/lib/financial-report-filter";
 import { getHotelStores, getRestaurantStores, 门店主数据, 全部门店值 } from "@/lib/store-master";
 import { useActiveStores } from "@/contexts/active-stores-context";
+
+const PROFIT_EMPHASIS_KEYS = new Set<keyof FinancialLineActual>([
+  "营业收入",
+  "毛利",
+  "营业利润",
+  "利润率"
+]);
+
+const numericCellClass = "text-right tabular-nums";
+const stickySubjectHeadClass =
+  "sticky left-0 z-20 min-w-[140px] bg-slate-50 shadow-[2px_0_4px_-2px_rgba(15,23,42,0.06)]";
+const stickySubjectCellClass =
+  "sticky left-0 z-10 bg-white shadow-[2px_0_4px_-2px_rgba(15,23,42,0.06)]";
+
+function displayMetricSourceLabel(change: string): string {
+  if (change === "actual_data") return "经营实际";
+  if (change === "budget_data") return "预算目标";
+  return change;
+}
 
 function resolveFinancialReportTrendQuery(filter: FinancialReportFilter): {
   storeId: string;
@@ -768,12 +786,13 @@ export default function FinancialReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold">财务报表</h1>
-          <p className="text-sm text-muted-foreground">
-            账期：{periodLabel} · 当前范围：{ACTIVE_STORE_SCOPE_SHORT_LABEL}（{ACTIVE_STORE_SCOPE_DETAIL_LABEL}）
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">财务报表</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            对比经营实际与预算，查看利润表与科目明细。平台范围：{ACTIVE_STORE_SCOPE_SHORT_LABEL}（
+            {ACTIVE_STORE_SCOPE_DETAIL_LABEL}）
           </p>
         </div>
         <Link href="/budget-management" className={cn(buttonVariants({ variant: "outline" }))}>
@@ -789,33 +808,35 @@ export default function FinancialReportsPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <CardTitle className="text-base">筛选与账期</CardTitle>
-            <p className="text-sm text-muted-foreground">本页唯一筛选源；与顶部导航无关</p>
+            <CardTitle className="text-base font-medium">本页筛选与账期</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              本页筛选只影响财务报表，不影响顶部全局账期。
+            </p>
           </div>
-          <div className="space-y-0.5 text-sm">
-            <p>
-              <span className="text-muted-foreground">当前期间：</span>
-              <span className="font-medium">{periodLabel}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">当前范围：</span>
-              <span className="font-medium">{scopeLabel}</span>
-            </p>
-            <p>
-              <span className="text-muted-foreground">预算版本：</span>
-              <span className="font-medium">{getBudgetVersionLabel(reportFilter.budgetVersion)}</span>
-            </p>
-            <p className="text-xs text-muted-foreground">
-              实际：{DATA_CALIBER_RULES.operatingImportTarget} · 预算：{DATA_CALIBER_RULES.budgetManagementTarget}
-            </p>
+          <div className="flex flex-wrap gap-2 text-sm">
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1">
+              <span className="text-muted-foreground">账期 </span>
+              <span className="font-medium text-slate-900">{periodLabel}</span>
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1">
+              <span className="text-muted-foreground">范围 </span>
+              <span className="font-medium text-slate-900">{scopeLabel}</span>
+            </span>
+            <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1">
+              <span className="text-muted-foreground">预算版本 </span>
+              <span className="font-medium text-slate-900">
+                {getBudgetVersionLabel(reportFilter.budgetVersion)}
+              </span>
+            </span>
           </div>
         </CardHeader>
-        <CardContent className="flex flex-wrap items-end gap-3">
+        <CardContent className="space-y-4 border-t border-slate-100 pt-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">报表范围</span>
+            <span className="text-xs font-medium text-muted-foreground">范围</span>
             <Select
               value={reportFilter.reportScope}
               onValueChange={(v) =>
@@ -825,7 +846,7 @@ export default function FinancialReportsPage() {
                 })
               }
             >
-              <SelectTrigger className="w-[200px]">
+              <SelectTrigger className="h-10 w-full min-w-[200px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -837,13 +858,13 @@ export default function FinancialReportsPage() {
             </Select>
           </div>
           {reportFilter.reportScope === "single" && (
-            <div className="space-y-1.5">
-              <span className="text-xs text-muted-foreground">门店</span>
+            <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
+              <span className="text-xs font-medium text-muted-foreground">门店</span>
               <Select
                 value={reportFilter.storeId ?? undefined}
                 onValueChange={(v) => patchReportFilter({ storeId: v, reportScope: "single" })}
               >
-                <SelectTrigger className="w-[280px]">
+                <SelectTrigger className="h-10 w-full min-w-[240px]">
                   <SelectValue placeholder="选择门店" />
                 </SelectTrigger>
                 <SelectContent>
@@ -857,12 +878,12 @@ export default function FinancialReportsPage() {
             </div>
           )}
           <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">年份</span>
+            <span className="text-xs font-medium text-muted-foreground">年</span>
             <Select
               value={String(reportFilter.year)}
               onValueChange={(v) => patchReportFilter({ year: Number(v) })}
             >
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="h-10 w-full min-w-[120px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -875,12 +896,12 @@ export default function FinancialReportsPage() {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">月份</span>
+            <span className="text-xs font-medium text-muted-foreground">月</span>
             <Select
               value={String(reportFilter.month)}
               onValueChange={(v) => patchReportFilter({ month: Number(v) })}
             >
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="h-10 w-full min-w-[120px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -893,12 +914,12 @@ export default function FinancialReportsPage() {
             </Select>
           </div>
           <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">预算版本</span>
+            <span className="text-xs font-medium text-muted-foreground">预算版本</span>
             <Select
               value={reportFilter.budgetVersion}
               onValueChange={(v) => patchReportFilter({ budgetVersion: v as FinancialReportFilter["budgetVersion"] })}
             >
-              <SelectTrigger className="w-[160px]">
+              <SelectTrigger className="h-10 w-full min-w-[160px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -910,6 +931,12 @@ export default function FinancialReportsPage() {
               </SelectContent>
             </Select>
           </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            图表与表格展示<strong className="font-medium text-slate-700">实际</strong>、
+            <strong className="font-medium text-slate-700">预算</strong>及
+            <strong className="font-medium text-slate-700">差异</strong>；金额展示为万元。
+          </p>
         </CardContent>
       </Card>
 
@@ -936,17 +963,23 @@ export default function FinancialReportsPage() {
         }}
       />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">实际 vs 预算（核心指标）</CardTitle>
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">实际 vs 预算（核心指标）</CardTitle>
           <p className="text-sm text-muted-foreground">
-            实际来自 actual_data；预算优先 budget_data（{getBudgetVersionLabel(reportFilter.budgetVersion)}）
+            对比本账期经营实际与预算目标（{getBudgetVersionLabel(reportFilter.budgetVersion)}）
           </p>
         </CardHeader>
         <CardContent>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 [&_.text-3xl]:w-full [&_.text-3xl]:text-right [&_.text-3xl]:tabular-nums">
             {actualVsBudgetCards.map((k) => (
-              <MetricCard key={k.标题} {...k} />
+              <MetricCard
+                key={k.标题}
+                标题={k.标题}
+                数值={k.数值}
+                变化={displayMetricSourceLabel(k.变化)}
+                趋势={k.趋势}
+              />
             ))}
           </section>
           {varianceAlerts.length > 0 ? (
@@ -959,32 +992,43 @@ export default function FinancialReportsPage() {
         </CardContent>
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {kpiTop.map((k) => <MetricCard key={k.标题} {...k} />)}
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 [&_.text-3xl]:w-full [&_.text-3xl]:text-right [&_.text-3xl]:tabular-nums">
+        {kpiTop.map((k) => (
+          <MetricCard
+            key={k.标题}
+            标题={k.标题}
+            数值={k.数值}
+            变化={displayMetricSourceLabel(k.变化)}
+            趋势={k.趋势}
+          />
+        ))}
       </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>经营实际数据（actual_data 全字段 vs 预算）</CardTitle>
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">经营科目明细（实际 / 预算 / 差异）</CardTitle>
+          <p className="text-sm text-muted-foreground">按科目分组展示经营实际与预算对比。</p>
         </CardHeader>
-        <CardContent className="overflow-x-auto">
+        <CardContent className="space-y-3">
           {!hasActualDataEnv ? (
             <p className="text-sm text-muted-foreground">
-              未配置 Supabase 环境变量，下表为科目结构预览（数值来自演示/mock）。配置后请从
+              未配置经营数据连接，下表为科目结构预览（演示数值）。配置后请从
               <Link href="/operating-data-template" className="mx-1 text-primary underline">
-                经营实际数据模板
+                经营数据导入
               </Link>
-              导入 actual_data。
+              页面导入经营实际数据。
             </p>
           ) : null}
+          <p className="text-xs text-muted-foreground">表格较宽，可横向滚动查看完整科目。</p>
+          <div className="overflow-x-auto rounded-md border border-slate-200">
           <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>分组</TableHead>
-                  <TableHead>科目</TableHead>
-                  <TableHead>实际</TableHead>
-                  <TableHead>预算</TableHead>
-                  <TableHead>差异</TableHead>
+                  <TableHead className="w-8 bg-slate-50" />
+                  <TableHead className={stickySubjectHeadClass}>科目</TableHead>
+                  <TableHead className={cn(numericCellClass, "bg-slate-50")}>实际</TableHead>
+                  <TableHead className={cn(numericCellClass, "bg-slate-50")}>预算</TableHead>
+                  <TableHead className={cn(numericCellClass, "bg-slate-50")}>差异</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -993,18 +1037,35 @@ export default function FinancialReportsPage() {
                   if (lines.length === 0) return null;
                   return (
                     <Fragment key={group}>
-                      <TableRow className="bg-muted/40">
-                        <TableCell colSpan={5} className="font-semibold">
+                      <TableRow className="bg-slate-100/90">
+                        <TableCell colSpan={5} className="py-2 text-sm font-semibold text-slate-800">
                           {group}
                         </TableCell>
                       </TableRow>
-                      {lines.map((line) => (
-                        <TableRow key={line.label}>
-                          <TableCell />
-                          <TableCell className="font-medium">{line.label}</TableCell>
-                          <TableCell>{formatOperatingValue(line, line.actual)}</TableCell>
-                          <TableCell>{formatOperatingValue(line, line.budget)}</TableCell>
-                          <TableCell>{formatOperatingValue(line, line.variance)}</TableCell>
+                      {lines.map((line, lineIdx) => (
+                        <TableRow
+                          key={line.label}
+                          className={cn(lineIdx % 2 === 1 && "bg-slate-50/60")}
+                        >
+                          <TableCell className={cn(lineIdx % 2 === 1 ? "bg-slate-50/60" : "bg-white")} />
+                          <TableCell
+                            className={cn(
+                              stickySubjectCellClass,
+                              "font-medium",
+                              lineIdx % 2 === 1 ? "bg-slate-50/60" : "bg-white"
+                            )}
+                          >
+                            {line.label}
+                          </TableCell>
+                          <TableCell className={numericCellClass}>
+                            {formatOperatingValue(line, line.actual)}
+                          </TableCell>
+                          <TableCell className={numericCellClass}>
+                            {formatOperatingValue(line, line.budget)}
+                          </TableCell>
+                          <TableCell className={numericCellClass}>
+                            {formatOperatingValue(line, line.variance)}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </Fragment>
@@ -1012,39 +1073,73 @@ export default function FinancialReportsPage() {
                 })}
               </TableBody>
             </Table>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader><CardTitle>利润表（实际 / 预算 / 差异 / 差异率）</CardTitle></CardHeader>
-        <CardContent className="overflow-x-auto">
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-medium">利润表</CardTitle>
+          <p className="text-sm text-muted-foreground">科目 · 实际 · 预算 · 差异 · 差异率</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-xs text-muted-foreground">表格较宽，可横向滚动查看完整科目。</p>
+          <div className="overflow-x-auto rounded-md border border-slate-200">
           <Table>
-            <TableHeader><TableRow><TableHead>项目</TableHead><TableHead>实际</TableHead><TableHead>预算</TableHead><TableHead>差异</TableHead><TableHead>差异率</TableHead></TableRow></TableHeader>
+            <TableHeader>
+              <TableRow>
+                <TableHead className={stickySubjectHeadClass}>科目</TableHead>
+                <TableHead className={cn(numericCellClass, "bg-slate-50")}>实际</TableHead>
+                <TableHead className={cn(numericCellClass, "bg-slate-50")}>预算</TableHead>
+                <TableHead className={cn(numericCellClass, "bg-slate-50")}>差异</TableHead>
+                <TableHead className={cn(numericCellClass, "bg-slate-50")}>差异率</TableHead>
+              </TableRow>
+            </TableHeader>
             <TableBody>
-              {利润表科目顺序.map(({ key, label }) => (
-                <TableRow key={key}>
-                  <TableCell className="font-medium">{label}</TableCell>
-                  <TableCell>{fmt(key, variance.实际[key])}</TableCell>
-                  <TableCell>{fmt(key, variance.预算[key])}</TableCell>
-                  <TableCell>{fmt(key, variance.差异[key])}</TableCell>
-                  <TableCell>{formatPct(variance.差异率[key])}</TableCell>
+              {利润表科目顺序.map(({ key, label }, rowIdx) => {
+                const emphasis = PROFIT_EMPHASIS_KEYS.has(key);
+                const rowBg = rowIdx % 2 === 1 ? "bg-slate-50/60" : "bg-white";
+                return (
+                <TableRow key={key} className={cn(emphasis && "bg-blue-50/40", !emphasis && rowIdx % 2 === 1 && "bg-slate-50/60")}>
+                  <TableCell
+                    className={cn(
+                      stickySubjectCellClass,
+                      emphasis ? "bg-blue-50/40 font-semibold text-slate-900" : cn("font-medium", rowBg)
+                    )}
+                  >
+                    {label}
+                  </TableCell>
+                  <TableCell className={cn(numericCellClass, emphasis && "font-medium")}>
+                    {fmt(key, variance.实际[key])}
+                  </TableCell>
+                  <TableCell className={cn(numericCellClass, emphasis && "font-medium")}>
+                    {fmt(key, variance.预算[key])}
+                  </TableCell>
+                  <TableCell className={cn(numericCellClass, emphasis && "font-medium")}>
+                    {fmt(key, variance.差异[key])}
+                  </TableCell>
+                  <TableCell className={cn(numericCellClass, emphasis && "font-medium")}>
+                    {formatPct(variance.差异率[key])}
+                  </TableCell>
                 </TableRow>
-              ))}
+              );
+              })}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>收入 / 成本 / 利润趋势</CardTitle>
+      <Card className="border-slate-200 shadow-sm">
+        <CardHeader className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base font-medium">收入 / 成本 / 利润趋势</CardTitle>
           <div className="flex flex-wrap gap-2">
             <Select value={chartMode} onValueChange={(v) => setChartMode(v as TrendChartMode)}>
-              <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="实际对比预算">实际 vs 预算</SelectItem><SelectItem value="收入成本利润">收入 / 成本 / 利润</SelectItem></SelectContent>
             </Select>
             <Select value={chartMetric} onValueChange={(v) => setChartMetric(v as "收入" | "成本" | "利润")}>
-              <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-10 w-[120px]"><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="收入">收入</SelectItem><SelectItem value="成本">成本</SelectItem><SelectItem value="利润">利润</SelectItem></SelectContent>
             </Select>
           </div>
