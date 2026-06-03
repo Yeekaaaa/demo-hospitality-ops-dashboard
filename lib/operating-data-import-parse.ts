@@ -33,6 +33,8 @@ export type OperatingDataPreviewRow = {
   /** 扩展字段：已解析数值，null 表示空不写库 */
   assetValues: OperatingDataAssetParsedValues;
   errors: string[];
+  /** 非阻断提示（如疑似按万元填写） */
+  warnings: string[];
 };
 
 function cellStr(v: unknown): string {
@@ -46,9 +48,19 @@ function isRowBlank(r: Record<string, unknown>): boolean {
   return OPERATING_DATA_FULL_IMPORT_HEADERS.every((h) => cellStr(r[h]) === "");
 }
 
+/** 金额 > 0 且 < 10000 时提示疑似万元（不换算、不阻断） */
+export function warnSuspectWanYuan(warnings: string[], label: string, value: number): void {
+  if (value > 0 && value < 10000) {
+    warnings.push(
+      `金额字段「${label}」数值为 ${value}，疑似按万元填写；当前模板要求填写元，如 3000000`
+    );
+  }
+}
+
 function validateAssetColumns(
   raw: Record<string, unknown>,
-  errors: string[]
+  errors: string[],
+  warnings: string[]
 ): OperatingDataAssetParsedValues {
   const out: OperatingDataAssetParsedValues = {};
   for (const col of OPERATING_DATA_ASSET_IMPORT_COLUMNS as readonly AssetImportColumnMeta[]) {
@@ -61,7 +73,12 @@ function validateAssetColumns(
       if (!n.ok) errors.push(n.error);
       else if (n.value !== "") {
         const v = Number(n.value);
-        out[col.dbKey as keyof OperatingDataAssetParsedValues] = Number.isFinite(v) ? v : null;
+        if (Number.isFinite(v)) {
+          out[col.dbKey as keyof OperatingDataAssetParsedValues] = v;
+          warnSuspectWanYuan(warnings, col.headerZh, v);
+        } else {
+          out[col.dbKey as keyof OperatingDataAssetParsedValues] = null;
+        }
       }
       continue;
     }
@@ -86,24 +103,13 @@ function parseOptionalNumber(raw: string, label: string): { ok: true; value: str
   return { ok: true, value: normalized };
 }
 
-function validatePeriodValue(type: string, period: string): string | null {
-  const t = type.toLowerCase();
+/** 经营导入仅支持月度账期 YYYY-MM */
+function validateMonthPeriodValue(period: string): string | null {
   const p = period.trim();
-  if (t === "month") {
-    const m = p.match(/^(\d{4})-(\d{2})$/);
-    if (!m) return "账期格式应为 YYYY-MM（如 2026-04）";
-    const mo = Number(m[2]);
-    if (mo < 1 || mo > 12) return "月份须在 01–12 之间";
-    return null;
-  }
-  if (t === "quarter") {
-    if (!/^\d{4}-Q[1-4]$/i.test(p)) return "账期格式应为 YYYY-Q1～Q4（如 2026-Q2）";
-    return null;
-  }
-  if (t === "year") {
-    if (!/^\d{4}$/.test(p)) return "账期格式应为四位年份（如 2026）";
-    return null;
-  }
+  const m = p.match(/^(\d{4})-(\d{2})$/);
+  if (!m) return "账期格式应为 YYYY-MM（如 2026-04）";
+  const mo = Number(m[2]);
+  if (mo < 1 || mo > 12) return "月份须在 01–12 之间";
   return null;
 }
 
@@ -146,20 +152,21 @@ export function parseOperatingDataWorkbook(wb: import("xlsx").WorkBook, XLSX: Xl
     const 客房原 = cellStr(raw["客房收入"]);
 
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     if (门店 === "") errors.push("门店为必填");
 
     const typeLower = 账期类型.toLowerCase();
     if (账期类型 === "") {
       errors.push("账期类型为必填");
-    } else if (!["month", "quarter", "year"].includes(typeLower)) {
-      errors.push("账期类型须为 month、quarter 或 year（小写）");
+    } else if (typeLower !== "month") {
+      errors.push("账期类型须为 month");
     }
 
     if (账期 === "") {
       errors.push("账期为必填");
-    } else if (["month", "quarter", "year"].includes(typeLower)) {
-      const pe = validatePeriodValue(typeLower, 账期);
+    } else if (typeLower === "month") {
+      const pe = validateMonthPeriodValue(账期);
       if (pe) errors.push(pe);
     }
 
@@ -168,17 +175,20 @@ export function parseOperatingDataWorkbook(wb: import("xlsx").WorkBook, XLSX: Xl
     } else {
       const rev = parseOptionalNumber(营业收入原, "营业收入");
       if (!rev.ok) errors.push(rev.error);
+      else if (rev.value !== "") warnSuspectWanYuan(warnings, "营业收入", Number(rev.value));
     }
 
     const 总成本 = 总成本原 === "" ? "" : 总成本原;
     if (总成本 !== "") {
       const c = parseOptionalNumber(总成本, "总成本");
       if (!c.ok) errors.push(c.error);
+      else if (c.value !== "") warnSuspectWanYuan(warnings, "总成本", Number(c.value));
     }
 
     if (利润原 !== "") {
       const p = parseOptionalNumber(利润原, "利润");
       if (!p.ok) errors.push(p.error);
+      else if (p.value !== "") warnSuspectWanYuan(warnings, "利润", Number(p.value));
     }
 
     if (可售原 !== "") {
@@ -194,9 +204,10 @@ export function parseOperatingDataWorkbook(wb: import("xlsx").WorkBook, XLSX: Xl
     if (客房原 !== "") {
       const rr = parseOptionalNumber(客房原, "客房收入");
       if (!rr.ok) errors.push(rr.error);
+      else if (rr.value !== "") warnSuspectWanYuan(warnings, "客房收入", Number(rr.value));
     }
 
-    const assetValues = validateAssetColumns(raw, errors);
+    const assetValues = validateAssetColumns(raw, errors, warnings);
 
     out.push({
       previewIndex: out.length + 1,
@@ -210,7 +221,8 @@ export function parseOperatingDataWorkbook(wb: import("xlsx").WorkBook, XLSX: Xl
       已售房晚: 已售原,
       客房收入: 客房原,
       assetValues,
-      errors
+      errors,
+      warnings
     });
   }
 

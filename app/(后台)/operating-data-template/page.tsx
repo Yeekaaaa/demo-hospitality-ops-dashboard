@@ -206,8 +206,8 @@ export default function OperatingDataTemplatePage() {
           <CardHeader>
             <CardTitle className="text-base">预览与校验</CardTitle>
             <p className="text-sm text-muted-foreground">
-              空行已自动跳过。标红行为存在校验问题；「校验结果」列汇总说明。序号表示预览中的顺序，与 Excel
-              从上到下的非空数据行一致。
+              空行已自动跳过。标红行为校验错误（须修正后才能导入）；标黄行为仅有提示（如金额疑似按万元填写，不阻断导入）。序号与
+              Excel 非空数据行一致。
             </p>
           </CardHeader>
           <CardContent className="overflow-x-auto">
@@ -235,8 +235,12 @@ export default function OperatingDataTemplatePage() {
               <TableBody>
                 {previewRows.map((r) => {
                   const bad = r.errors.length > 0;
+                  const hasWarnings = r.warnings.length > 0;
                   return (
-                    <TableRow key={r.previewIndex} className={cn(bad && "bg-red-50/90")}>
+                    <TableRow
+                      key={r.previewIndex}
+                      className={cn(bad && "bg-red-50/90", !bad && hasWarnings && "bg-amber-50/80")}
+                    >
                       <TableCell className="text-muted-foreground">{r.previewIndex}</TableCell>
                       <TableCell className="font-medium">{r.门店}</TableCell>
                       <TableCell>{r.账期类型}</TableCell>
@@ -263,8 +267,21 @@ export default function OperatingDataTemplatePage() {
                           </TableCell>
                         );
                       })}
-                      <TableCell className={cn("text-sm", bad ? "text-red-800" : "text-emerald-700")}>
-                        {bad ? r.errors.join("；") : "通过"}
+                      <TableCell className="text-sm">
+                        {bad ? (
+                          <span className="text-red-800">{r.errors.join("；")}</span>
+                        ) : (
+                          <div className="space-y-1">
+                            <span className="text-emerald-700">通过</span>
+                            {hasWarnings && (
+                              <ul className="list-inside list-disc text-amber-900">
+                                {r.warnings.map((w) => (
+                                  <li key={w}>{w}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
