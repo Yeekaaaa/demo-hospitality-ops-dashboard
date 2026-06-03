@@ -2,13 +2,14 @@
 
 import { Bell, ChevronDown } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useActiveStores } from "@/contexts/active-stores-context";
 import { useStorePeriod } from "@/contexts/store-period-context";
+import { getActiveRestaurantStoreIds, getStoreDisplayName } from "@/lib/active-store-scope";
 import { sanitizeTopbarStoreId } from "@/lib/budget-filter";
 import { 全部门店值 } from "@/lib/store-master";
 import {
@@ -28,9 +29,18 @@ function shouldHideGlobalTopbarFilters(pathname: string | null): boolean {
   );
 }
 
+/** 餐饮运营页：顶栏仅展示在营餐饮门店（当前仅西北赋） */
+function isRestaurantOperationsPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  return (
+    pathname === "/restaurant-operations" || pathname.startsWith("/restaurant-operations/")
+  );
+}
+
 export function Topbar() {
   const pathname = usePathname();
   const hideGlobalFilters = shouldHideGlobalTopbarFilters(pathname);
+  const restaurantOpsPage = isRestaurantOperationsPath(pathname);
 
   const {
     storeId,
@@ -44,11 +54,39 @@ export function Topbar() {
 
   const { stores, loading: storesLoading } = useActiveStores();
 
+  const restaurantStores = useMemo(() => {
+    const restIds = new Set(getActiveRestaurantStoreIds(stores));
+    return stores.filter((s) => restIds.has(s.id));
+  }, [stores]);
+
+  const restaurantStoreId = restaurantStores[0]?.id ?? null;
+  const restaurantStoreLabel =
+    restaurantStores[0] != null
+      ? getStoreDisplayName(restaurantStores[0])
+      : "西北赋";
+
   useEffect(() => {
-    if (hideGlobalFilters || storesLoading || stores.length === 0) return;
+    if (hideGlobalFilters || storesLoading) return;
+
+    if (restaurantOpsPage) {
+      if (restaurantStoreId && storeId !== restaurantStoreId) {
+        setStoreId(restaurantStoreId);
+      }
+      return;
+    }
+
+    if (stores.length === 0) return;
     const next = sanitizeTopbarStoreId(storeId, stores);
     if (next !== storeId) setStoreId(next);
-  }, [stores, storesLoading, storeId, setStoreId, hideGlobalFilters]);
+  }, [
+    stores,
+    storesLoading,
+    storeId,
+    setStoreId,
+    hideGlobalFilters,
+    restaurantOpsPage,
+    restaurantStoreId
+  ]);
 
   return (
     <header className="sticky top-0 z-10 border-b bg-background/90 px-6 py-3 backdrop-blur">
@@ -59,19 +97,43 @@ export function Topbar() {
           ) : (
             <>
               <div className="min-w-[200px] max-w-[280px] flex-1 sm:flex-none">
-                <Select value={storeId} onValueChange={setStoreId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择门店" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={全部门店值}>全部门店</SelectItem>
-                    {stores.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {formatStoreOptionLabel(s)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {restaurantOpsPage ? (
+                  restaurantStores.length > 1 ? (
+                    <Select value={storeId} onValueChange={setStoreId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="选择餐饮门店" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {restaurantStores.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>
+                            {formatStoreOptionLabel(s)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <span
+                      className="flex h-10 items-center rounded-md border bg-background px-3 text-sm font-medium"
+                      aria-label="当前餐饮门店"
+                    >
+                      {restaurantStoreLabel}
+                    </span>
+                  )
+                ) : (
+                  <Select value={storeId} onValueChange={setStoreId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择门店" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={全部门店值}>全部门店</SelectItem>
+                      {stores.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {formatStoreOptionLabel(s)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="w-[88px]">

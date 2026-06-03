@@ -9,14 +9,9 @@ import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-c
 import { useActiveStores } from "@/contexts/active-stores-context";
 import { useStorePeriod } from "@/contexts/store-period-context";
 import { restaurantKpisFromOperatingSubjects } from "@/lib/actual-data-restaurant-kpis";
-import {
-  getActiveHotelStoreIds,
-  getActiveRestaurantStoreIds,
-  getStoreDisplayName
-} from "@/lib/active-store-scope";
+import { getActiveRestaurantStoreIds, getStoreDisplayName } from "@/lib/active-store-scope";
 import { restaurantOperationsActualDataScope } from "@/lib/dashboard-actual-scope";
 import { formatWan, getRestaurantOperationsKpis, getTrendSeries } from "@/lib/mock-analytics";
-import { 全部门店值 } from "@/lib/store-master";
 import {
   getTrendSeriesFromSupabase,
   type DashboardTrendPoint
@@ -25,7 +20,7 @@ import {
 const MOCK_RESTAURANT_ID = "rest-xibeifu-sjz";
 
 export default function RestaurantOperationsPage() {
-  const { storeId, reportPeriod } = useStorePeriod();
+  const { reportPeriod } = useStorePeriod();
   const { stores: supabaseStores } = useActiveStores();
 
   const restaurantStoreIds = useMemo(
@@ -40,13 +35,6 @@ export default function RestaurantOperationsPage() {
     const s = supabaseStores.find((x) => x.id === restaurantStoreId);
     return s ? getStoreDisplayName(s) : "西北赋";
   }, [restaurantStoreId, supabaseStores]);
-
-  const topbarIsHotelStore = useMemo(
-    () =>
-      storeId !== 全部门店值 &&
-      getActiveHotelStoreIds(supabaseStores).includes(storeId),
-    [storeId, supabaseStores]
-  );
 
   const actualDataScope = useMemo(
     () => restaurantOperationsActualDataScope(supabaseStores),
@@ -119,12 +107,6 @@ export default function RestaurantOperationsPage() {
           {!hasActiveRestaurantInSupabase ? "（演示数据，未匹配 Supabase 在营餐饮门店）" : null}
         </p>
       </div>
-
-      {topbarIsHotelStore && (
-        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
-          当前顶栏选择为酒店门店，餐饮模块展示西北赋。
-        </p>
-      )}
 
       <DataSourceBanner
         actual={{
