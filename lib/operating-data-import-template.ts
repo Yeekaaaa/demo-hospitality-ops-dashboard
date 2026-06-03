@@ -32,13 +32,13 @@ export const OPERATING_DATA_IMPORT_HEADERS = [
 
 export type OperatingDataImportHeader = (typeof OPERATING_DATA_IMPORT_HEADERS)[number];
 
-/** 完整表头：与 master schema 一致（39 列） */
+/** 完整表头：与 master schema 一致（42 列） */
 export const OPERATING_DATA_FULL_IMPORT_HEADERS = OPERATING_DATA_MASTER_TEMPLATE_HEADERS;
 
 const 数据表头 = [...OPERATING_DATA_FULL_IMPORT_HEADERS];
 
-if (数据表头.length !== 39) {
-  throw new Error(`经营数据模板表头应为 39 列，当前为 ${数据表头.length} 列`);
+if (数据表头.length !== 42) {
+  throw new Error(`经营数据模板表头应为 42 列，当前为 ${数据表头.length} 列`);
 }
 
 const 说明表头 = ["字段分组", "表头名称", "库表 actual_data 字段", "填写说明", "单位 / 格式"] as const;
@@ -98,7 +98,10 @@ function 示例行(): (string | number)[] {
     30000,
     20000,
     "5%",
-    1
+    1,
+    5000,
+    12000,
+    8000
   ];
   if (extras.length !== OPERATING_DATA_ASSET_IMPORT_HEADERS.length) {
     throw new Error(

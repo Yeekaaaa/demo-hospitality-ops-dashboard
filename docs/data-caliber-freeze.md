@@ -39,6 +39,22 @@
 
 经营导入模板中金额字段亦按**元**填写（例：`3000000` 表示 300 万元）。
 
+### P0 扩展金额列（2026-06，模板末尾追加，不改动原 39 列顺序）
+
+| 列名 | 含义 | 底层单位 |
+|------|------|----------|
+| `non_operating_expense` | 营业外支出 | **元** |
+| `financial_expense` | 财务费用 | **元** |
+| `back_office_management_fee` | 后勤管理费 | **元** |
+
+- **`huazhu_management_fee`（华住管理费）**：包括华住管理费、**会员卡售卖上交**等管理费类成本；按元填报，**不得**作为收入抵减。
+- **会员卡售卖上交**：不单独建列 `member_card_sales_remittance`，金额并入 `huazhu_management_fee`。
+- **分配后利润**：仅系统计算项，**不入库**。公式：  
+  `operating_profit - staff_bonus - back_office_bonus - manager_bonus - back_office_management_fee - financial_expense + non_operating_income - non_operating_expense`  
+  （对应表头：运营利润、员工/后勤/店长奖金、后勤管理费、财务费用、营业外收入、营业外支出。）
+- 经营导入模板由 **39 列增至 42 列**；原 39 列表头顺序不变，上述 3 列接在末尾。
+- 金额疑似按万元填写（`> 0` 且 `< 10000`）仅 **warning**，不自动换算、不阻断导入。
+
 ---
 
 ## 3. budget_data 字段口径（冻结）
@@ -124,4 +140,4 @@
 
 ---
 
-*最后冻结范围：actual_data / budget_data 分离、六核心预算列、金额底层单位为元、上述 KPI 公式、展示层万元格式化、预算管理 canonical 科目。*
+*最后冻结范围：actual_data / budget_data 分离、六核心预算列、金额底层单位为元、上述 KPI 公式、展示层万元格式化、预算管理 canonical 科目、P0 三列 actual 扩展与华住/会员卡/分配后利润口径。*

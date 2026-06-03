@@ -51,6 +51,10 @@ const CHANNEL_WALKIN_HELP =
 const CHANNEL_DIRECT_HELP =
   "前台、电话、微信、私域等直接销售产生的房晚 ÷ 总已售房晚。" + RATIO_IMPORT_HELP_TEXT;
 
+const HUAZHU_MANAGEMENT_FEE_HELP =
+  "包括华住管理费、会员卡售卖上交等管理费类成本，单位为元；不得作为收入抵减，不与营业收入冲减。" +
+  YUAN_IMPORT_HELP_TEXT;
+
 /** 新模板输入列（顺序与「数据模板」表头一致，接在 9 个基础列之后） */
 export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumnMeta[] = [
   { headerZh: "营业成本", dbKey: "business_cost", kind: "yuan", fieldGroup: "经营结果" },
@@ -96,7 +100,13 @@ export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumn
   { headerZh: "销售费用", dbKey: "sales_expense", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "非客房服务成本", dbKey: "non_room_service_cost", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "客房服务成本", dbKey: "room_service_cost", kind: "yuan", fieldGroup: "成本结构" },
-  { headerZh: "华住管理费", dbKey: "huazhu_management_fee", kind: "yuan", fieldGroup: "成本结构" },
+  {
+    headerZh: "华住管理费",
+    dbKey: "huazhu_management_fee",
+    kind: "yuan",
+    fieldGroup: "成本结构",
+    fillHelp: HUAZHU_MANAGEMENT_FEE_HELP
+  },
   { headerZh: "房租", dbKey: "rent", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "税金及附加", dbKey: "tax_and_surcharge", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "员工奖金", dbKey: "staff_bonus", kind: "yuan", fieldGroup: "成本结构" },
@@ -112,7 +122,10 @@ export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumn
   { headerZh: "投诉数", dbKey: "complaint_count", kind: "count", fieldGroup: "运营风险" },
   { headerZh: "异常维修数", dbKey: "abnormal_repair_count", kind: "count", fieldGroup: "运营风险" },
   { headerZh: "员工流失率", dbKey: "staff_turnover_rate", kind: "ratio_or_percent", fieldGroup: "运营风险" },
-  { headerZh: "同商圈新增竞品数", dbKey: "nearby_new_competitor_count", kind: "count", fieldGroup: "运营风险" }
+  { headerZh: "同商圈新增竞品数", dbKey: "nearby_new_competitor_count", kind: "count", fieldGroup: "运营风险" },
+  { headerZh: "营业外支出", dbKey: "non_operating_expense", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "财务费用", dbKey: "financial_expense", kind: "yuan", fieldGroup: "利润与现金流" },
+  { headerZh: "后勤管理费", dbKey: "back_office_management_fee", kind: "yuan", fieldGroup: "成本结构" }
 ] as const;
 
 /** 旧版模板扩展列：仍支持上传解析与入库，不进入新下载模板 */
@@ -334,6 +347,12 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
     fieldGroup: "利润与现金流",
     headerZh: "摊销后纯利润单间",
     formula: "摊销后纯利润（元）÷ 可售间夜"
+  },
+  {
+    fieldGroup: "利润与现金流",
+    headerZh: "分配后利润",
+    formula:
+      "运营利润 - 员工奖金 - 后勤奖金 - 店长奖金 - 后勤管理费 - 财务费用 + 营业外收入 - 营业外支出（系统计算，不入库）"
   }
 ] as const;
 

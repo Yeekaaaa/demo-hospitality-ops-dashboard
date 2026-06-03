@@ -56,7 +56,10 @@ const EXT = [
   "complaint_count",
   "abnormal_repair_count",
   "staff_turnover_rate",
-  "nearby_new_competitor_count"
+  "nearby_new_competitor_count",
+  "non_operating_expense",
+  "financial_expense",
+  "back_office_management_fee"
 ];
 const ALL = [...BASE, ...EXT];
 
@@ -73,7 +76,7 @@ async function probeColumn(col) {
 }
 
 async function main() {
-  console.log("=== actual_data 列探测（master 扩展 30 + 基础 9）===\n");
+  console.log("=== actual_data 列探测（master 扩展 33 + 基础 9）===\n");
   const missing = [];
   for (const col of ALL) {
     const r = await probeColumn(col);

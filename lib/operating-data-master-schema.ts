@@ -1,5 +1,5 @@
 /**
- * 经营实际数据模板 master schema（39 个表头字段，顺序固定）
+ * 经营实际数据模板 master schema（42 个表头字段，顺序固定）
  * 下载模板、导入解析、字段说明、actual_data、预算科目派生均以此为准。
  */
 
@@ -33,7 +33,7 @@ export const OPERATING_BASE_BUSINESS_DB_MAP: Record<OperatingBaseBusinessHeader,
   客房收入: "room_revenue"
 };
 
-/** 「数据模板」sheet 完整表头（39 列） */
+/** 「数据模板」sheet 完整表头（42 列） */
 export const OPERATING_DATA_MASTER_TEMPLATE_HEADERS = [
   ...OPERATING_DATA_META_HEADERS,
   ...OPERATING_DATA_BASE_BUSINESS_HEADERS,

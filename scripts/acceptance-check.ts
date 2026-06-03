@@ -31,8 +31,8 @@ function fail(msg: string) {
   failures.push(`✗ ${msg}`);
 }
 
-if (OPERATING_DATA_MASTER_TEMPLATE_HEADERS.length === 39) {
-  pass("master schema 表头数量 = 39");
+if (OPERATING_DATA_MASTER_TEMPLATE_HEADERS.length === 42) {
+  pass("master schema 表头数量 = 42");
 } else {
   fail(`master schema 表头数量 = ${OPERATING_DATA_MASTER_TEMPLATE_HEADERS.length}`);
 }
@@ -82,7 +82,7 @@ else fail("缺少 sheet");
 
 const rowsAoA = XLSX.utils.sheet_to_json<unknown[]>(dataSheet!, { header: 1, defval: "" });
 const headers = (rowsAoA[0] as string[]) ?? [];
-if (headers.length === 39) pass("数据模板首行 39 列");
+if (headers.length === 42) pass("数据模板首行 42 列");
 else fail(`数据模板首行 ${headers.length} 列`);
 
 if (OPERATING_DATA_MASTER_TEMPLATE_HEADERS.every((h, i) => headers[i] === h)) {
@@ -96,7 +96,7 @@ if (OPERATING_DATA_MASTER_TEMPLATE_HEADERS.every((h, i) => headers[i] === h)) {
 const descRowsJson = XLSX.utils.sheet_to_json<Record<string, string>>(descSheet!, { defval: "" });
 const names = new Set(descRowsJson.map((r) => String(r["表头名称"] ?? "").trim()).filter(Boolean));
 const inputHeaders = OPERATING_DATA_MASTER_TEMPLATE_HEADERS.filter((h) => !["门店", "账期类型", "账期"].includes(h));
-if (inputHeaders.every((h) => names.has(h))) pass("字段说明覆盖全部 36 个经营输入字段");
+if (inputHeaders.every((h) => names.has(h))) pass("字段说明覆盖全部 39 个经营输入字段");
 else fail(`字段说明缺: ${inputHeaders.filter((h) => !names.has(h)).join(", ")}`);
 
 const calcMissing = OPERATING_DATA_CALCULATED_FIELD_ROWS.filter((c) => !names.has(c.headerZh));
@@ -123,7 +123,7 @@ const p2 = parseOperatingDataWorkbook(wb2, XLSX);
 if (p2.ok && p2.rows[0]?.errors.length === 0) {
   const dbKeys = new Set(Object.keys(p2.rows[0]!.assetValues));
   const extDb = OPERATING_DATA_EXTENSION_IMPORT_COLUMNS.map((c) => c.dbKey);
-  if (extDb.every((k) => dbKeys.has(k))) pass("全字段填充后解析 30 个扩展 dbKey");
+  if (extDb.every((k) => dbKeys.has(k))) pass("全字段填充后解析 33 个扩展 dbKey");
   else fail(`缺 dbKey: ${extDb.filter((k) => !dbKeys.has(k)).join(", ")}`);
 } else fail("全字段填充解析失败");
 
