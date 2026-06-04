@@ -14,7 +14,8 @@ import {
 import { getMessage, t } from "../lib/i18n/get-message";
 import { enUSMessages } from "../lib/i18n/messages/en-US";
 import { zhCNMessages } from "../lib/i18n/messages/zh-CN";
-import type { MessageTree } from "../lib/i18n/types";
+import type { Locale, MessageTree } from "../lib/i18n/types";
+import { resolvePersistedLocale } from "../lib/i18n/types";
 import {
   formatMetricSourceLabel,
   METRIC_SOURCE_TAG
@@ -178,6 +179,48 @@ assert(
 assert(
   "en-US missing key falls back to zh or key path",
   missingEn === "auth.login.__missing_key__" || missingEn === getMessage("zh-CN", "auth.login.__missing_key__")
+);
+
+const isLocale = (value: string): value is Locale => value === "zh-CN" || value === "en-US";
+
+assert(
+  "stale zh-CN localStorage ignored when env default en-US",
+  resolvePersistedLocale({
+    envDefault: "en-US",
+    storedLocale: "zh-CN",
+    storedSnapshot: null,
+    isValidLocale: isLocale
+  }) === "en-US"
+);
+
+assert(
+  "manual zh-CN kept when snapshot matches env en-US",
+  resolvePersistedLocale({
+    envDefault: "en-US",
+    storedLocale: "zh-CN",
+    storedSnapshot: "en-US",
+    isValidLocale: isLocale
+  }) === "zh-CN"
+);
+
+assert(
+  "env switch to zh-CN resets stale en-US without matching snapshot",
+  resolvePersistedLocale({
+    envDefault: "zh-CN",
+    storedLocale: "en-US",
+    storedSnapshot: "en-US",
+    isValidLocale: isLocale
+  }) === "zh-CN"
+);
+
+assert(
+  "zh-CN business keeps manual en-US when snapshot matches",
+  resolvePersistedLocale({
+    envDefault: "zh-CN",
+    storedLocale: "en-US",
+    storedSnapshot: "zh-CN",
+    isValidLocale: isLocale
+  }) === "en-US"
 );
 
 assert("chartTypeLabelZh line", chartTypeLabelZh("line") === t("smartChart.chartType.line"));

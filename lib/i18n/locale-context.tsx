@@ -4,16 +4,20 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   type ReactNode
 } from "react";
 import { getMessage } from "@/lib/i18n/get-message";
 import type { MessageParams } from "@/lib/i18n/types";
-import { getDefaultLocaleFromEnv, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n/types";
-
-const LOCALE_STORAGE_KEY = "fengtin-locale";
+import {
+  getDefaultLocaleFromEnv,
+  LOCALE_DEFAULT_SNAPSHOT_KEY,
+  LOCALE_STORAGE_KEY,
+  resolvePersistedLocale,
+  SUPPORTED_LOCALES,
+  type Locale
+} from "@/lib/i18n/types";
 
 type LocaleContextValue = {
   locale: Locale;
@@ -27,16 +31,44 @@ function isLocale(value: string): value is Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }
 
-function readStoredLocale(): Locale {
+function readAndSyncStoredLocale(): Locale {
   const envDefault = getDefaultLocaleFromEnv();
   if (typeof window === "undefined") return envDefault;
+
   try {
-    const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored && isLocale(stored)) return stored;
+    const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    const storedSnapshot = window.localStorage.getItem(LOCALE_DEFAULT_SNAPSHOT_KEY);
+    const resolved = resolvePersistedLocale({
+      envDefault,
+      storedLocale,
+      storedSnapshot,
+      isValidLocale: isLocale
+    });
+
+    if (storedSnapshot !== envDefault) {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, resolved);
+      window.localStorage.setItem(LOCALE_DEFAULT_SNAPSHOT_KEY, envDefault);
+    } else if (!storedLocale || !isLocale(storedLocale)) {
+      window.localStorage.setItem(LOCALE_STORAGE_KEY, resolved);
+      if (storedSnapshot == null) {
+        window.localStorage.setItem(LOCALE_DEFAULT_SNAPSHOT_KEY, envDefault);
+      }
+    }
+
+    return resolved;
+  } catch {
+    return envDefault;
+  }
+}
+
+function persistUserLocaleChoice(next: Locale): void {
+  const envDefault = getDefaultLocaleFromEnv();
+  try {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
+    window.localStorage.setItem(LOCALE_DEFAULT_SNAPSHOT_KEY, envDefault);
   } catch {
     /* ignore */
   }
-  return envDefault;
 }
 
 export function LocaleProvider({
@@ -46,18 +78,14 @@ export function LocaleProvider({
   children: ReactNode;
   initialLocale?: Locale;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
-
-  useEffect(() => {
-    setLocaleState(readStoredLocale());
-  }, []);
+  const [locale, setLocaleState] = useState<Locale>(() =>
+    typeof window !== "undefined" ? readAndSyncStoredLocale() : initialLocale
+  );
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
-    try {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
-    } catch {
-      /* ignore */
+    if (typeof window !== "undefined") {
+      persistUserLocaleChoice(next);
     }
   }, []);
 
@@ -73,9 +101,9 @@ export function LocaleProvider({
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
 }
 
-/** 读取持久化语言（供后续 layout  hydration 使用） */
+/** 读取持久化语言（供后续 layout hydration 使用） */
 export function getPersistedLocale(): Locale {
-  return readStoredLocale();
+  return readAndSyncStoredLocale();
 }
 
 export function useLocale(): LocaleContextValue {

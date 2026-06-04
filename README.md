@@ -45,7 +45,7 @@ npm run start
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 可选。Supabase **anon** 公钥；**不要**使用 service role key。 |
 | `NEXT_PUBLIC_DEMO_MODE` | 可选预留。公开演示建议保持 `1`；当前行为以未配置 Supabase / 无数据时的演示回退为主。 |
 | `NEXT_PUBLIC_DEMO_USER_NAME` | 可选预留。顶栏演示用户显示名（未接线时以界面内置「演示用户」为准）。 |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | 可选。`zh-CN`（默认）或 `en-US`。未配置或非法值时回退 `zh-CN`。中文业务部署保持默认即可；Vercel Portfolio 演示建议 `en-US`。用户曾在顶栏切换的语言会写入 `localStorage['fengtin-locale']`，刷新后优先于本变量。 |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | 可选。`zh-CN`（默认）或 `en-US`。未配置或非法值时回退 `zh-CN`。中文业务部署保持默认即可；Vercel Portfolio 演示建议 `en-US`。顶栏手动切换会写入 `localStorage['fengtin-locale']` 与 `fengtin-locale-default-snapshot`（部署时的 env 默认语言）；仅当 snapshot 与当前 env 一致时，才沿用用户上次选择。 |
 
 不配置 Supabase 时，各页以 mock / 演示数据运行，页面顶部会提示「演示数据」。
 
@@ -53,7 +53,7 @@ npm run start
 
 - **中文业务系统**：不设置 `NEXT_PUBLIC_DEFAULT_LOCALE`，或设为 `zh-CN`。
 - **公开演示（如 Vercel）**：在 Project → Environment Variables 添加 `NEXT_PUBLIC_DEFAULT_LOCALE` = `en-US`，重新部署后生效。
-- **优先级**：`localStorage['fengtin-locale']`（用户手动切换）→ `NEXT_PUBLIC_DEFAULT_LOCALE` → `zh-CN`。
+- **优先级**：若 `fengtin-locale-default-snapshot` 与当前 `NEXT_PUBLIC_DEFAULT_LOCALE` 不一致（含首次访问、env 变更、旧缓存无 snapshot），使用 env 默认并刷新 snapshot；否则使用 `fengtin-locale`（顶栏手动切换）；env 未配置时回退 `zh-CN`。
 - **当前英文文案范围**：侧栏、登录、数据来源 Banner、智能图表推荐等；驾驶舱、运营、财务报表、预算等复杂业务页仍以中文为主。
 
 ## 主要功能（演示范围）
