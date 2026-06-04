@@ -9,6 +9,7 @@ import { BudgetImportActions } from "@/components/budget/budget-import-actions";
 import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { DataQualityBanner } from "@/components/common/data-quality-banner";
 import { MetricCard } from "@/components/common/metric-card";
+import { SmartChartRecommendationBadge } from "@/components/common/smart-chart-recommendation-badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,6 +76,18 @@ import {
 } from "@/lib/financial-report-filter";
 import { getHotelStores, getRestaurantStores, 门店主数据, 全部门店值 } from "@/lib/store-master";
 import { useActiveStores } from "@/contexts/active-stores-context";
+import {
+  fromFinancialTrendRows,
+  fromFinancialTrendRowsSingleMetric
+} from "@/lib/smart-chart/adapters";
+import { recommendSmartChart } from "@/lib/smart-chart/recommend";
+import type { SmartChartMetric } from "@/lib/smart-chart/types";
+
+const FINANCIAL_CHART_METRIC_TO_SMART: Record<"收入" | "成本" | "利润", SmartChartMetric> = {
+  收入: "revenue",
+  成本: "cost",
+  利润: "profit"
+};
 
 const PROFIT_EMPHASIS_KEYS = new Set<keyof FinancialLineActual>([
   "营业收入",
@@ -416,6 +429,20 @@ export default function FinancialReportsPage() {
     () => checkTrendQuality(trendData as Array<Record<string, unknown>>, chartMetric),
     [trendData, chartMetric]
   );
+
+  const trendChartRecommendation = useMemo(() => {
+    const rows = trendData as Array<Record<string, unknown>>;
+    if (chartMode === "实际对比预算") {
+      return recommendSmartChart(
+        fromFinancialTrendRowsSingleMetric(
+          rows,
+          "financial",
+          FINANCIAL_CHART_METRIC_TO_SMART[chartMetric]
+        )
+      );
+    }
+    return recommendSmartChart(fromFinancialTrendRows(rows, "financial"));
+  }, [trendData, chartMode, chartMetric]);
 
   const operatingVariance = useMemo(() => {
     const full = buildFullBudgetVariance(
@@ -1131,9 +1158,13 @@ export default function FinancialReportsPage() {
       </Card>
 
       <Card className="border-slate-200 shadow-sm">
-        <CardHeader className="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle className="text-base font-medium">收入 / 成本 / 利润趋势</CardTitle>
-          <div className="flex flex-wrap gap-2">
+        <CardHeader className="flex flex-col gap-3 pb-2">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0 flex-1 space-y-2">
+              <CardTitle className="text-base font-medium">收入 / 成本 / 利润趋势</CardTitle>
+              <SmartChartRecommendationBadge recommendation={trendChartRecommendation} />
+            </div>
+            <div className="flex flex-shrink-0 flex-wrap gap-2">
             <Select value={chartMode} onValueChange={(v) => setChartMode(v as TrendChartMode)}>
               <SelectTrigger className="h-10 w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="实际对比预算">实际 vs 预算</SelectItem><SelectItem value="收入成本利润">收入 / 成本 / 利润</SelectItem></SelectContent>
@@ -1142,6 +1173,7 @@ export default function FinancialReportsPage() {
               <SelectTrigger className="h-10 w-[120px]"><SelectValue /></SelectTrigger>
               <SelectContent><SelectItem value="收入">收入</SelectItem><SelectItem value="成本">成本</SelectItem><SelectItem value="利润">利润</SelectItem></SelectContent>
             </Select>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
