@@ -49,15 +49,18 @@ export const enUSMessages = {
       badge: "Internal operations platform",
       companyName: "Demo Hospitality Group Co., Ltd.",
       productName: "Demo Hotel & F&B Operations Platform",
+      description:
+        "Unified hotel and restaurant operating data for leadership, finance, and store managers.",
       tagline:
         "Unified hotel and restaurant operating data for leadership, finance, and store managers.",
       title: "Sign in",
       subtitle: "Enter your credentials to continue",
       accountLabel: "Account",
-      accountPlaceholder: "Account",
+      accountPlaceholder: "Enter your account",
       passwordLabel: "Password",
-      passwordPlaceholder: "Password",
+      passwordPlaceholder: "Enter your password",
       remember: "Remember me",
+      rememberMe: "Remember me",
       forgotPassword: "Forgot password",
       submit: "Sign in"
     }
@@ -154,5 +157,70 @@ export const enUSMessages = {
       module_metric_forbidden: "Metric not allowed for charts in this module",
       ambiguous_shape: "Complex shape—start with a table"
     }
+  },
+
+  dashboard: {
+    pageTitle: "Executive Dashboard",
+    periodLine: "{scope} · Period {period} · {scopeShort} ({scopeDetail})",
+    exportBrief: "Export Executive Brief",
+    scopeAllStores: "All Stores",
+    scopeHotelBoard: "Hotel Board",
+    scopeRestaurantBoard: "Restaurant Board",
+    scopeSegmentHotel: "hotel segment",
+    scopeSegmentRestaurant: "restaurant segment",
+    scopeSegmentOperating: "operating stores",
+    scopeMultiStores: "{count} stores ({segment})",
+    activeScopeShort: "demo city operating stores",
+    activeScopeDetail: "Demo Hotel A, Demo Hotel B, Demo Hotel C, Demo Restaurant",
+    sectionCurrentPerformance: "Current Period Performance",
+    totalRevenue: "Total Revenue",
+    totalProfit: "Total Profit",
+    profitMargin: "Profit Margin",
+    occupancyRate: "Occupancy Rate",
+    vsBudgetTitle: "Actual vs Budget",
+    vsBudgetSubtitle: "Compared to budget targets for this period ({version})",
+    varianceAlertsTitle: "Variance Alerts",
+    trendTitle: "Revenue / Cost / Profit Trend (Last 6 Periods)",
+    demoSummaryTitle: "Demo Summary (UI example, not imported operating data)",
+    demoRestaurantNote:
+      "Demo Restaurant: 3 condiment batches near expiry—prioritize outbound use.",
+    demoHotelNote:
+      "Demo Hotel A: linen below safety stock—replenishment suggestion generated.",
+    demoApprovalsNote:
+      "Pending approvals: 2 expense reports, 2 purchase requests, 1 leave request—expected today.",
+    budgetVersionBase: "Baseline",
+    budgetVersionOptimistic: "Optimistic",
+    budgetVersionConservative: "Conservative",
+    metrics: {
+      actualRevenue: "Actual Revenue",
+      budgetRevenue: "Budget Revenue",
+      revenueCompletion: "Revenue Budget Completion",
+      actualCost: "Actual Cost",
+      budgetCost: "Budget Cost",
+      costVariance: "Cost Budget Variance",
+      actualProfit: "Actual Profit",
+      budgetProfit: "Budget Profit",
+      profitCompletion: "Profit Budget Completion"
+    },
+    status: {
+      onTrack: "On track",
+      offTrack: "Off track",
+      overBudget: "Over budget",
+      controlled: "Controlled"
+    },
+    variance: {
+      revenueBelow90:
+        "Revenue budget completion is below 90%—review pricing, volume, and channels.",
+      costOver2Pct: "Actual cost exceeds budget by more than 2%—review labor and utilities.",
+      profitCompletionLow:
+        "Profit budget completion is low—review revenue and cost together.",
+      profitNegative: "Actual profit is negative this period—prioritize loss control and spend."
+    }
+  },
+
+  common: {
+    loading: "Loading…",
+    noData: "No data",
+    period: "Period"
   }
 } as const satisfies MessageTree;

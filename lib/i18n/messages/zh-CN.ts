@@ -49,6 +49,8 @@ export const zhCNMessages = {
       badge: "企业内部经营管理系统",
       companyName: "示例酒店餐饮管理有限公司",
       productName: "示例酒店餐饮经营管理平台",
+      description:
+        "统一管理酒店与餐饮经营数据，提升经营效率与决策能力。系统面向老板、财务、店长、餐厅经理与管理人员提供稳定、高效、可追溯的数据工作台。",
       tagline:
         "统一管理酒店与餐饮经营数据，提升经营效率与决策能力。系统面向老板、财务、店长、餐厅经理与管理人员提供稳定、高效、可追溯的数据工作台。",
       title: "欢迎登录",
@@ -58,6 +60,7 @@ export const zhCNMessages = {
       passwordLabel: "密码",
       passwordPlaceholder: "请输入密码",
       remember: "记住登录状态",
+      rememberMe: "记住登录状态",
       forgotPassword: "忘记密码",
       submit: "登录系统"
     }
@@ -152,6 +155,60 @@ export const zhCNMessages = {
       too_many_categories: "明细项较多，更适合用表格查看",
       module_metric_forbidden: "当前模块不适合用该指标做图表展示",
       ambiguous_shape: "数据形态较复杂，建议先用表格查看"
+    }
+  },
+
+  dashboard: {
+    pageTitle: "经营驾驶舱",
+    periodLine: "{scope} · 账期 {period} · {scopeShort}（{scopeDetail}）",
+    exportBrief: "导出老板一页纸",
+    scopeAllStores: "全部门店",
+    scopeHotelBoard: "酒店看板",
+    scopeRestaurantBoard: "餐饮看板",
+    scopeSegmentHotel: "酒店板块",
+    scopeSegmentRestaurant: "餐饮板块",
+    scopeSegmentOperating: "经营门店",
+    scopeMultiStores: "{count} 家门店（{segment}）",
+    activeScopeShort: "示例城市经营门店",
+    activeScopeDetail: "示例酒店 A、示例酒店 B、示例酒店 C、示例餐厅",
+    sectionCurrentPerformance: "本期经营结果",
+    totalRevenue: "总收入",
+    totalProfit: "总利润",
+    profitMargin: "利润率",
+    occupancyRate: "出租率",
+    vsBudgetTitle: "本期实际 vs 预算目标",
+    vsBudgetSubtitle: "对比本账期预算目标（{version}）",
+    varianceAlertsTitle: "偏差预警",
+    trendTitle: "收入 / 成本 / 利润趋势（近 6 个账期）",
+    demoSummaryTitle: "演示摘要（界面示例，非经营导入）",
+    demoRestaurantNote: "示例餐厅：调味品批次临期 3 批，建议优先出库。",
+    demoHotelNote: "示例酒店 A：布草低于安全库存，已生成补货建议。",
+    demoApprovalsNote: "待审批：报销 2 单、采购申请 2 单、请假 1 单，预计今日内处理完毕。",
+    budgetVersionBase: "基准版",
+    budgetVersionOptimistic: "乐观版",
+    budgetVersionConservative: "保守版",
+    metrics: {
+      actualRevenue: "实际收入",
+      budgetRevenue: "预算收入",
+      revenueCompletion: "收入预算完成率",
+      actualCost: "实际成本",
+      budgetCost: "预算成本",
+      costVariance: "成本预算差异",
+      actualProfit: "实际利润",
+      budgetProfit: "预算利润",
+      profitCompletion: "利润预算完成率"
+    },
+    status: {
+      onTrack: "达标",
+      offTrack: "未达标",
+      overBudget: "超支",
+      controlled: "受控"
+    },
+    variance: {
+      revenueBelow90: "收入预算完成率低于 90%，需关注价量与渠道结构。",
+      costOver2Pct: "实际成本超预算 2% 以上，建议排查人力与能耗。",
+      profitCompletionLow: "利润预算完成率偏低，收入与成本需联动复盘。",
+      profitNegative: "本期实际利润为负，请优先止损与费用管控。"
     }
   },
 

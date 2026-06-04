@@ -38,16 +38,12 @@ import {
   resolveActualTotals,
   resolveBudgetTotals
 } from "@/lib/actual-vs-budget-kpi";
-import { DEFAULT_BUDGET_VERSION, getBudgetVersionLabel } from "@/lib/budget-versions";
+import { DEFAULT_BUDGET_VERSION } from "@/lib/budget-versions";
 import { useBudgetOverrides } from "@/contexts/budget-overrides-context";
 import { useBudgetDataForScope } from "@/contexts/budget-data-supabase-context";
 import { useActualDataSupabaseForScope } from "@/contexts/actual-data-supabase-context";
 import { useActiveStores } from "@/contexts/active-stores-context";
-import {
-  ACTIVE_STORE_SCOPE_DETAIL_LABEL,
-  ACTIVE_STORE_SCOPE_SHORT_LABEL,
-  filterActiveMockStores
-} from "@/lib/active-store-scope";
+import { filterActiveMockStores } from "@/lib/active-store-scope";
 import { 全部门店值 } from "@/lib/store-master";
 import { cn } from "@/lib/utils";
 import {
@@ -61,6 +57,43 @@ import {
 import { fromDashboardTrend } from "@/lib/smart-chart/adapters";
 import { formatMetricSourceLabel } from "@/lib/metric-source-labels";
 import { recommendSmartChart } from "@/lib/smart-chart/recommend";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { BudgetVersionValue } from "@/lib/budget-versions";
+
+const DASHBOARD_METRIC_TITLE_KEYS: Record<string, string> = {
+  实际收入: "dashboard.metrics.actualRevenue",
+  预算收入: "dashboard.metrics.budgetRevenue",
+  收入预算完成率: "dashboard.metrics.revenueCompletion",
+  实际成本: "dashboard.metrics.actualCost",
+  预算成本: "dashboard.metrics.budgetCost",
+  成本预算差异: "dashboard.metrics.costVariance",
+  实际利润: "dashboard.metrics.actualProfit",
+  预算利润: "dashboard.metrics.budgetProfit",
+  利润预算完成率: "dashboard.metrics.profitCompletion"
+};
+
+const DASHBOARD_METRIC_STATUS_KEYS: Record<string, string> = {
+  达标: "dashboard.status.onTrack",
+  未达标: "dashboard.status.offTrack",
+  超支: "dashboard.status.overBudget",
+  受控: "dashboard.status.controlled"
+};
+
+const DASHBOARD_VARIANCE_ALERT_KEYS: Record<string, string> = {
+  "收入预算完成率低于 90%，需关注价量与渠道结构。": "dashboard.variance.revenueBelow90",
+  "实际成本超预算 2% 以上，建议排查人力与能耗。": "dashboard.variance.costOver2Pct",
+  "利润预算完成率偏低，收入与成本需联动复盘。": "dashboard.variance.profitCompletionLow",
+  "本期实际利润为负，请优先止损与费用管控。": "dashboard.variance.profitNegative"
+};
+
+function dashboardBudgetVersionLabel(
+  version: BudgetVersionValue,
+  translate: (key: string) => string
+): string {
+  if (version === "optimistic") return translate("dashboard.budgetVersionOptimistic");
+  if (version === "conservative") return translate("dashboard.budgetVersionConservative");
+  return translate("dashboard.budgetVersionBase");
+}
 
 function mockAnalyticsStoreScope(storeId: string): string {
   if (storeId === 全部门店值) return storeId;
@@ -102,6 +135,7 @@ function emptySnapshot(): CockpitSnapshot {
 }
 
 export default function DashboardPage() {
+  const { t } = useLocale();
   const { storeId, reportPeriod, periodLabel, periodGranularity } = useStorePeriod();
   const { overrides: actualOverrides } = useActualOverrides();
   const { overrides: budgetOverrides } = useBudgetOverrides();
@@ -121,10 +155,19 @@ export default function DashboardPage() {
       return s ? `${s.name}（${actualDataScope.slice(0, 8)}…）` : actualDataScope;
     }
     if (Array.isArray(actualDataScope)) {
-      return `${actualDataScope.length} 家门店（${boardType === "hotelBoard" ? "酒店板块" : boardType === "restaurantBoard" ? "餐饮板块" : "经营门店"}）`;
+      const segment =
+        boardType === "hotelBoard"
+          ? t("dashboard.scopeSegmentHotel")
+          : boardType === "restaurantBoard"
+            ? t("dashboard.scopeSegmentRestaurant")
+            : t("dashboard.scopeSegmentOperating");
+      return t("dashboard.scopeMultiStores", {
+        count: actualDataScope.length,
+        segment
+      });
     }
     return "—";
-  }, [actualDataScope, supabaseStores, boardType]);
+  }, [actualDataScope, supabaseStores, boardType, t]);
 
   const {
     operatingSubjects,
@@ -380,8 +423,49 @@ export default function DashboardPage() {
     return "盈利能力偏弱，应优先排查亏损门店和高成本项";
   }, [snapshot, marginPct]);
 
-  const scopeLabel =
-    boardType === "all" ? "全部门店" : boardType === "hotelBoard" ? "酒店看板" : "餐饮看板";
+  const scopeLabel = useMemo(() => {
+    if (boardType === "all") return t("dashboard.scopeAllStores");
+    if (boardType === "hotelBoard") return t("dashboard.scopeHotelBoard");
+    return t("dashboard.scopeRestaurantBoard");
+  }, [boardType, t]);
+
+  const translateMetricTitle = useCallback(
+    (title: string) => {
+      const key = DASHBOARD_METRIC_TITLE_KEYS[title];
+      return key ? t(key) : title;
+    },
+    [t]
+  );
+
+  const translateMetricChange = useCallback(
+    (change: string) => {
+      if (change === "actual_data") return t("dataSource.operatingActual");
+      if (change === "budget_data") return t("dataSource.budgetData");
+      const statusKey = DASHBOARD_METRIC_STATUS_KEYS[change];
+      if (statusKey) return t(statusKey);
+      return formatMetricSourceLabel(change);
+    },
+    [t]
+  );
+
+  const translateVarianceAlert = useCallback(
+    (line: string) => {
+      const key = DASHBOARD_VARIANCE_ALERT_KEYS[line];
+      return key ? t(key) : line;
+    },
+    [t]
+  );
+
+  const periodSubtitle = useMemo(
+    () =>
+      t("dashboard.periodLine", {
+        scope: scopeLabel,
+        period: periodLabel,
+        scopeShort: t("dashboard.activeScopeShort"),
+        scopeDetail: t("dashboard.activeScopeDetail")
+      }),
+    [t, scopeLabel, periodLabel]
+  );
 
   const structRevSum =
     snapshot.structure.hotelRevenue +
@@ -449,12 +533,9 @@ export default function DashboardPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
-            经营驾驶舱
+            {t("dashboard.pageTitle")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {scopeLabel} · 账期 {periodLabel} · {ACTIVE_STORE_SCOPE_SHORT_LABEL}（
-            {ACTIVE_STORE_SCOPE_DETAIL_LABEL}）
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{periodSubtitle}</p>
         </div>
         <div className="flex flex-shrink-0 flex-wrap items-center justify-end gap-2">
           <Button
@@ -464,7 +545,7 @@ export default function DashboardPage() {
             className="whitespace-nowrap"
             onClick={handleExportBossOnePager}
           >
-            导出老板一页纸
+            {t("dashboard.exportBrief")}
           </Button>
           <div className="w-[160px] min-w-[140px]">
             <Select value={boardType} onValueChange={(v) => setBoardType(v as BoardType)}>
@@ -472,9 +553,9 @@ export default function DashboardPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部门店</SelectItem>
-                <SelectItem value="hotelBoard">酒店看板</SelectItem>
-                <SelectItem value="restaurantBoard">餐饮看板</SelectItem>
+                <SelectItem value="all">{t("dashboard.scopeAllStores")}</SelectItem>
+                <SelectItem value="hotelBoard">{t("dashboard.scopeHotelBoard")}</SelectItem>
+                <SelectItem value="restaurantBoard">{t("dashboard.scopeRestaurantBoard")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -509,11 +590,11 @@ export default function DashboardPage() {
           id="cockpit-primary-kpi"
           className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground"
         >
-          本期经营结果
+          {t("dashboard.sectionCurrentPerformance")}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <ExecutiveKpiCard
-          title="总收入"
+          title={t("dashboard.totalRevenue")}
           value={formatWan(snapshot.current.revenue)}
           current={snapshot.current.revenue}
           previous={snapshot.previous.revenue}
@@ -521,7 +602,7 @@ export default function DashboardPage() {
           granularity={periodGranularity}
         />
         <ExecutiveKpiCard
-          title="总利润"
+          title={t("dashboard.totalProfit")}
           value={formatWan(snapshot.current.profit)}
           current={snapshot.current.profit}
           previous={snapshot.previous.profit}
@@ -529,7 +610,7 @@ export default function DashboardPage() {
           granularity={periodGranularity}
         />
         <ExecutiveKpiCard
-          title="利润率"
+          title={t("dashboard.profitMargin")}
           value={formatPctOneDecimal(marginPct)}
           current={marginPct}
           previous={prevMarginPct}
@@ -539,7 +620,7 @@ export default function DashboardPage() {
         {showOccRevpar ? (
           <>
             <ExecutiveKpiCard
-              title="出租率"
+              title={t("dashboard.occupancyRate")}
               value={
                 snapshot.current.roomsAvailable > 0 ? formatPctOneDecimal(occCurrent) : "—"
               }
@@ -562,7 +643,7 @@ export default function DashboardPage() {
         ) : (
           <>
             <ExecutiveKpiCard
-              title="出租率"
+              title={t("dashboard.occupancyRate")}
               value="—"
               current={0}
               previous={0}
@@ -584,9 +665,11 @@ export default function DashboardPage() {
 
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-medium">本期实际 vs 预算目标</CardTitle>
+          <CardTitle className="text-base font-medium">{t("dashboard.vsBudgetTitle")}</CardTitle>
           <p className="text-sm text-muted-foreground">
-            对比本账期预算目标（{getBudgetVersionLabel(DEFAULT_BUDGET_VERSION)}）
+            {t("dashboard.vsBudgetSubtitle", {
+              version: dashboardBudgetVersionLabel(DEFAULT_BUDGET_VERSION, t)
+            })}
           </p>
         </CardHeader>
         <CardContent>
@@ -594,19 +677,19 @@ export default function DashboardPage() {
             {bossActualVsBudget.cards.map((k) => (
               <MetricCard
                 key={k.标题}
-                标题={k.标题}
+                标题={translateMetricTitle(k.标题)}
                 数值={k.数值}
-                变化={formatMetricSourceLabel(k.变化)}
+                变化={translateMetricChange(k.变化)}
                 趋势={k.趋势}
               />
             ))}
           </section>
           {bossActualVsBudget.alerts.length > 0 ? (
             <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
-              <p className="text-sm font-medium text-amber-900">偏差预警</p>
+              <p className="text-sm font-medium text-amber-900">{t("dashboard.varianceAlertsTitle")}</p>
               <ul className="mt-1 list-disc pl-5 text-sm text-amber-800">
                 {bossActualVsBudget.alerts.map((line) => (
-                  <li key={line}>{line}</li>
+                  <li key={line}>{translateVarianceAlert(line)}</li>
                 ))}
               </ul>
             </div>
@@ -626,9 +709,7 @@ export default function DashboardPage() {
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2 border-slate-200 shadow-sm">
           <CardHeader className="space-y-2 pb-2">
-            <CardTitle className="text-base font-medium">
-              收入 / 成本 / 利润趋势（近 6 个账期）
-            </CardTitle>
+            <CardTitle className="text-base font-medium">{t("dashboard.trendTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             <SmartChartRenderer
@@ -646,18 +727,18 @@ export default function DashboardPage() {
         <Card className="border border-dashed border-slate-200 bg-muted/30 shadow-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              演示摘要（界面示例，非经营导入）
+              {t("dashboard.demoSummaryTitle")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5 text-sm leading-relaxed">
             <div className="rounded-md border border-amber-200/80 bg-amber-50/80 p-2.5 text-amber-950">
-              示例餐厅：调味品批次临期 3 批，建议优先出库。
+              {t("dashboard.demoRestaurantNote")}
             </div>
             <div className="rounded-md border border-red-200/80 bg-red-50/80 p-2.5 text-red-900">
-              示例酒店 A：布草低于安全库存，已生成补货建议。
+              {t("dashboard.demoHotelNote")}
             </div>
             <div className="rounded-md bg-muted/50 p-2.5 text-muted-foreground">
-              待审批：报销 2 单、采购申请 2 单、请假 1 单，预计今日内处理完毕。
+              {t("dashboard.demoApprovalsNote")}
             </div>
           </CardContent>
         </Card>

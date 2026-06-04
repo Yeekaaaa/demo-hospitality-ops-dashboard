@@ -45,6 +45,37 @@ function collectLeafKeys(tree: MessageTree, prefix = ""): string[] {
   return keys;
 }
 
+function collectEmptyLeafKeys(tree: MessageTree, prefix = ""): string[] {
+  const empty: string[] = [];
+  for (const [key, value] of Object.entries(tree)) {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "string") {
+      if (value.trim().length === 0) empty.push(path);
+    } else {
+      empty.push(...collectEmptyLeafKeys(value, path));
+    }
+  }
+  return empty;
+}
+
+const LOGIN_MESSAGE_KEYS = [
+  "auth.login.title",
+  "auth.login.subtitle",
+  "auth.login.accountLabel",
+  "auth.login.accountPlaceholder",
+  "auth.login.passwordLabel",
+  "auth.login.passwordPlaceholder",
+  "auth.login.remember",
+  "auth.login.rememberMe",
+  "auth.login.forgotPassword",
+  "auth.login.submit",
+  "auth.login.badge",
+  "auth.login.companyName",
+  "auth.login.productName",
+  "auth.login.description",
+  "auth.login.tagline"
+] as const;
+
 const zhKeys = collectLeafKeys(zhCNMessages);
 const enKeys = new Set(collectLeafKeys(enUSMessages));
 
@@ -82,6 +113,72 @@ assert(
 );
 
 assert("en-US scaffold keys subset", [...enKeys].every((k) => zhKeys.includes(k)));
+
+/** 允许字典源文件留空（运行时 getMessage 会回退 zh-CN 或 key） */
+const ALLOW_EMPTY_DICTIONARY_LEAVES = new Set(["banner.budget.hidden"]);
+
+const zhEmptyLeaves = collectEmptyLeafKeys(zhCNMessages).filter(
+  (k) => !ALLOW_EMPTY_DICTIONARY_LEAVES.has(k)
+);
+const enEmptyLeaves = collectEmptyLeafKeys(enUSMessages).filter(
+  (k) => !ALLOW_EMPTY_DICTIONARY_LEAVES.has(k)
+);
+assert(
+  "zh-CN dictionary leaves non-empty",
+  zhEmptyLeaves.length === 0,
+  zhEmptyLeaves.join(", ")
+);
+assert(
+  "en-US dictionary leaves non-empty",
+  enEmptyLeaves.length === 0,
+  enEmptyLeaves.join(", ")
+);
+
+assert(
+  "en-US empty leaf falls back (not blank)",
+  getMessage("en-US", "banner.budget.hidden").trim().length > 0
+);
+
+for (const key of LOGIN_MESSAGE_KEYS) {
+  const en = getMessage("en-US", key);
+  const zh = getMessage("zh-CN", key);
+  assert(`en-US login key non-empty: ${key}`, en.trim().length > 0 && en !== key, en);
+  assert(`zh-CN login key non-empty: ${key}`, zh.trim().length > 0 && zh !== key, zh);
+}
+
+assert(
+  'getMessage("en-US", "auth.login.title") is English',
+  getMessage("en-US", "auth.login.title") === "Sign in"
+);
+assert(
+  'getMessage("zh-CN", "auth.login.title") is Chinese',
+  getMessage("zh-CN", "auth.login.title") === "欢迎登录"
+);
+
+assert(
+  'getMessage("en-US", "dashboard.pageTitle") is English',
+  getMessage("en-US", "dashboard.pageTitle") === "Executive Dashboard"
+);
+assert(
+  'getMessage("zh-CN", "dashboard.pageTitle") is Chinese',
+  getMessage("zh-CN", "dashboard.pageTitle") === "经营驾驶舱"
+);
+assert(
+  "en-US dashboard login metrics non-empty",
+  getMessage("en-US", "dashboard.metrics.actualRevenue").trim().length > 0 &&
+    getMessage("en-US", "dashboard.vsBudgetTitle") === "Actual vs Budget"
+);
+
+const missingEn = getMessage("en-US", "auth.login.__missing_key__");
+assert(
+  "en-US missing key fallback not blank",
+  missingEn.trim().length > 0,
+  `got "${missingEn}"`
+);
+assert(
+  "en-US missing key falls back to zh or key path",
+  missingEn === "auth.login.__missing_key__" || missingEn === getMessage("zh-CN", "auth.login.__missing_key__")
+);
 
 assert("chartTypeLabelZh line", chartTypeLabelZh("line") === t("smartChart.chartType.line"));
 assert(
