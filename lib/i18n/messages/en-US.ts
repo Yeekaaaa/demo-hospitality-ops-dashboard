@@ -58,6 +58,7 @@ export const enUSMessages = {
       passwordLabel: "Password",
       passwordPlaceholder: "Password",
       remember: "Remember me",
+      forgotPassword: "Forgot password",
       submit: "Sign in"
     }
   }

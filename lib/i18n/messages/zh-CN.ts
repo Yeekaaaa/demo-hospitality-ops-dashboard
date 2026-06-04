@@ -58,7 +58,8 @@ export const zhCNMessages = {
       passwordLabel: "密码",
       passwordPlaceholder: "请输入密码",
       remember: "记住登录状态",
-      submit: "登录"
+      forgotPassword: "忘记密码",
+      submit: "登录系统"
     }
   },
 

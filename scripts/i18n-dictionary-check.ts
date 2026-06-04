@@ -40,7 +40,10 @@ assert("zh-CN key count >= 80", zhKeys.length >= 80, `count=${zhKeys.length}`);
 
 for (const key of [
   "nav.items.dashboard",
+  "nav.groups.finance",
   "auth.login.title",
+  "auth.login.submit",
+  "auth.login.forgotPassword",
   "smartChart.emptyRecommendation",
   "dataSource.operatingActual"
 ]) {

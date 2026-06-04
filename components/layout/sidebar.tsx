@@ -23,72 +23,91 @@ import {
   Users,
   Wallet
 } from "lucide-react";
+import { t } from "@/lib/i18n/get-message";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
-type 菜单项 = {
-  名称: string;
-  路径: string;
-  图标: LucideIcon;
+type NavItemDef = {
+  labelKey: string;
+  path: string;
+  icon: LucideIcon;
 };
 
-type 菜单分组 = {
-  分组标题: string;
-  项: 菜单项[];
+type NavGroupDef = {
+  groupKey: string;
+  items: NavItemDef[];
 };
 
 /** 按经营管理逻辑分组；路径与业务逻辑勿随意改动 */
-const 分组菜单: 菜单分组[] = [
+const NAV_MENU: NavGroupDef[] = [
   {
-    分组标题: "经营驾驶舱",
-    项: [
-      { 名称: "首页总览", 路径: "/dashboard", 图标: LayoutGrid },
-      { 名称: "经营增长分析", 路径: "/data-analysis", 图标: BarChart3 },
-      { 名称: "异常预警中心", 路径: "/risk-alerts", 图标: ShieldAlert }
+    groupKey: "nav.groups.cockpit",
+    items: [
+      { labelKey: "nav.items.dashboard", path: "/dashboard", icon: LayoutGrid },
+      { labelKey: "nav.items.dataAnalysis", path: "/data-analysis", icon: BarChart3 },
+      { labelKey: "nav.items.riskAlerts", path: "/risk-alerts", icon: ShieldAlert }
     ]
   },
   {
-    分组标题: "业务运营",
-    项: [
-      { 名称: "酒店运营", 路径: "/hotel-operations", 图标: Hotel },
-      { 名称: "餐饮运营", 路径: "/restaurant-operations", 图标: Soup }
+    groupKey: "nav.groups.operations",
+    items: [
+      { labelKey: "nav.items.hotelOperations", path: "/hotel-operations", icon: Hotel },
+      {
+        labelKey: "nav.items.restaurantOperations",
+        path: "/restaurant-operations",
+        icon: Soup
+      }
     ]
   },
   {
-    分组标题: "财务管理",
-    项: [
-      { 名称: "财务报表", 路径: "/financial-reports", 图标: Wallet },
-      { 名称: "预算管理", 路径: "/budget-management", 图标: PieChart }
+    groupKey: "nav.groups.finance",
+    items: [
+      { labelKey: "nav.items.financialReports", path: "/financial-reports", icon: Wallet },
+      { labelKey: "nav.items.budgetManagement", path: "/budget-management", icon: PieChart }
     ]
   },
   {
-    分组标题: "执行管理",
-    项: [
-      { 名称: "问题闭环追踪", 路径: "/issue-tracking", 图标: ListTodo },
-      { 名称: "巡店检查表", 路径: "/store-inspection", 图标: ClipboardList },
-      { 名称: "审批与工单", 路径: "/approvals-workorders", 图标: ClipboardCheck }
+    groupKey: "nav.groups.execution",
+    items: [
+      { labelKey: "nav.items.issueTracking", path: "/issue-tracking", icon: ListTodo },
+      { labelKey: "nav.items.storeInspection", path: "/store-inspection", icon: ClipboardList },
+      {
+        labelKey: "nav.items.approvalsWorkorders",
+        path: "/approvals-workorders",
+        icon: ClipboardCheck
+      }
     ]
   },
   {
-    分组标题: "资源管理",
-    项: [
-      { 名称: "采购库存", 路径: "/procurement-inventory", 图标: ShoppingCart },
-      { 名称: "员工与排班", 路径: "/staff-scheduling", 图标: Users },
-      { 名称: "会员与客户", 路径: "/members-customers", 图标: Building2 }
+    groupKey: "nav.groups.resources",
+    items: [
+      {
+        labelKey: "nav.items.procurementInventory",
+        path: "/procurement-inventory",
+        icon: ShoppingCart
+      },
+      { labelKey: "nav.items.staffScheduling", path: "/staff-scheduling", icon: Users },
+      { labelKey: "nav.items.membersCustomers", path: "/members-customers", icon: Building2 }
     ]
   },
   {
-    分组标题: "数据管理",
-    项: [{ 名称: "经营数据模板", 路径: "/operating-data-template", 图标: FileSpreadsheet }]
+    groupKey: "nav.groups.data",
+    items: [
+      {
+        labelKey: "nav.items.operatingDataTemplate",
+        path: "/operating-data-template",
+        icon: FileSpreadsheet
+      }
+    ]
   },
   {
-    分组标题: "系统",
-    项: [{ 名称: "系统设置", 路径: "/system-settings", 图标: Settings }]
+    groupKey: "nav.groups.system",
+    items: [{ labelKey: "nav.items.systemSettings", path: "/system-settings", icon: Settings }]
   }
 ];
 
-function 是否当前路径(pathname: string, 路径: string): boolean {
-  return pathname === 路径 || (路径 !== "/" && pathname.startsWith(`${路径}/`));
+function isActivePath(pathname: string, path: string): boolean {
+  return pathname === path || (path !== "/" && pathname.startsWith(`${path}/`));
 }
 
 export function Sidebar({
@@ -110,42 +129,42 @@ export function Sidebar({
       <div className="mb-6 flex items-center justify-between px-2">
         {!collapsed && (
           <div>
-            <p className="text-sm font-semibold">河北沣庭酒店餐饮</p>
-            <p className="text-xs text-muted-foreground">经营管理平台</p>
+            <p className="text-sm font-semibold">{t("nav.brandTitle")}</p>
+            <p className="text-xs text-muted-foreground">{t("nav.brandSubtitle")}</p>
           </div>
         )}
         <Button variant="outline" size="sm" onClick={onToggle}>
-          {collapsed ? "展开" : "收起"}
+          {collapsed ? t("nav.expand") : t("nav.collapse")}
         </Button>
       </div>
       <nav className="space-y-0">
-        {分组菜单.map((group, groupIndex) => (
-          <div key={group.分组标题} className={cn(groupIndex > 0 && (collapsed ? "mt-3" : "mt-5"))}>
+        {NAV_MENU.map((group, groupIndex) => (
+          <div key={group.groupKey} className={cn(groupIndex > 0 && (collapsed ? "mt-3" : "mt-5"))}>
             {!collapsed && (
               <p
                 className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground"
                 aria-hidden
               >
-                {group.分组标题}
+                {t(group.groupKey)}
               </p>
             )}
             <div className="space-y-1">
-              {group.项.map((item) => {
-                const 当前 = 是否当前路径(pathname, item.路径);
-                const Icon = item.图标;
+              {group.items.map((item) => {
+                const active = isActivePath(pathname, item.path);
+                const Icon = item.icon;
                 return (
                   <Link
-                    key={`${group.分组标题}-${item.路径}`}
-                    href={item.路径 as Route}
+                    key={`${group.groupKey}-${item.path}`}
+                    href={item.path as Route}
                     className={cn(
                       "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                      当前
+                      active
                         ? "bg-primary text-white"
                         : "text-foreground hover:bg-secondary hover:text-foreground"
                     )}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    {!collapsed && <span>{item.名称}</span>}
+                    {!collapsed && <span>{t(item.labelKey)}</span>}
                   </Link>
                 );
               })}
