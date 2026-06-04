@@ -10,8 +10,8 @@ import {
   type ReactNode
 } from "react";
 import { getMessage } from "@/lib/i18n/get-message";
-import type { Locale, MessageParams } from "@/lib/i18n/types";
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from "@/lib/i18n/types";
+import type { MessageParams } from "@/lib/i18n/types";
+import { getDefaultLocaleFromEnv, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n/types";
 
 const LOCALE_STORAGE_KEY = "fengtin-locale";
 
@@ -28,19 +28,20 @@ function isLocale(value: string): value is Locale {
 }
 
 function readStoredLocale(): Locale {
-  if (typeof window === "undefined") return DEFAULT_LOCALE;
+  const envDefault = getDefaultLocaleFromEnv();
+  if (typeof window === "undefined") return envDefault;
   try {
     const stored = window.localStorage.getItem(LOCALE_STORAGE_KEY);
     if (stored && isLocale(stored)) return stored;
   } catch {
     /* ignore */
   }
-  return DEFAULT_LOCALE;
+  return envDefault;
 }
 
 export function LocaleProvider({
   children,
-  initialLocale = DEFAULT_LOCALE
+  initialLocale = getDefaultLocaleFromEnv()
 }: {
   children: ReactNode;
   initialLocale?: Locale;
@@ -80,10 +81,11 @@ export function getPersistedLocale(): Locale {
 export function useLocale(): LocaleContextValue {
   const ctx = useContext(LocaleContext);
   if (!ctx) {
+    const fallback = getDefaultLocaleFromEnv();
     return {
-      locale: DEFAULT_LOCALE,
+      locale: fallback,
       setLocale: () => {},
-      t: (key, params) => getMessage(DEFAULT_LOCALE, key, params)
+      t: (key, params) => getMessage(fallback, key, params)
     };
   }
   return ctx;

@@ -6,7 +6,7 @@
 
 - **定位**：企业内部经营驾驶舱原型，展示 KPI、趋势、预算对比、经营导入与智能图表推荐等能力。
 - **数据模式**：未配置 Supabase 时使用本地演示数据；配置后可在有数据时展示库内经营/预算，无数据或不可用时仍回退演示并显示数据来源提示条。
-- **语言**：默认中文（`zh-CN`）；顶栏可切换部分界面为英文（侧栏、登录、数据来源提示、智能图表推荐文案等）。
+- **语言**：默认中文（`zh-CN`）；顶栏可切换部分界面为英文。GitHub / Vercel 公开演示可在环境变量中设置 `NEXT_PUBLIC_DEFAULT_LOCALE=en-US`（首次访问、无本地偏好时生效）。
 - **金额口径**：库内与聚合计算底层单位为**元**；Dashboard、财务报表等大额展示通过 `formatWan` 等形式显示为**万元**（仅展示层 ÷ 10000）。
 
 ## 技术栈
@@ -45,8 +45,16 @@ npm run start
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 可选。Supabase **anon** 公钥；**不要**使用 service role key。 |
 | `NEXT_PUBLIC_DEMO_MODE` | 可选预留。公开演示建议保持 `1`；当前行为以未配置 Supabase / 无数据时的演示回退为主。 |
 | `NEXT_PUBLIC_DEMO_USER_NAME` | 可选预留。顶栏演示用户显示名（未接线时以界面内置「演示用户」为准）。 |
+| `NEXT_PUBLIC_DEFAULT_LOCALE` | 可选。`zh-CN`（默认）或 `en-US`。未配置或非法值时回退 `zh-CN`。中文业务部署保持默认即可；Vercel Portfolio 演示建议 `en-US`。用户曾在顶栏切换的语言会写入 `localStorage['fengtin-locale']`，刷新后优先于本变量。 |
 
 不配置 Supabase 时，各页以 mock / 演示数据运行，页面顶部会提示「演示数据」。
+
+### 语言与英文覆盖范围
+
+- **中文业务系统**：不设置 `NEXT_PUBLIC_DEFAULT_LOCALE`，或设为 `zh-CN`。
+- **公开演示（如 Vercel）**：在 Project → Environment Variables 添加 `NEXT_PUBLIC_DEFAULT_LOCALE` = `en-US`，重新部署后生效。
+- **优先级**：`localStorage['fengtin-locale']`（用户手动切换）→ `NEXT_PUBLIC_DEFAULT_LOCALE` → `zh-CN`。
+- **当前英文文案范围**：侧栏、登录、数据来源 Banner、智能图表推荐等；驾驶舱、运营、财务报表、预算等复杂业务页仍以中文为主。
 
 ## 主要功能（演示范围）
 

@@ -4,6 +4,7 @@ export { enUSMessages } from "@/lib/i18n/messages/en-US";
 export { zhCNMessages } from "@/lib/i18n/messages/zh-CN";
 export {
   DEFAULT_LOCALE,
+  getDefaultLocaleFromEnv,
   SUPPORTED_LOCALES,
   type Locale,
   type MessageParams,
