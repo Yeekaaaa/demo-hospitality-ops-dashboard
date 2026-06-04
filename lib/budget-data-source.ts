@@ -2,7 +2,13 @@ import type { BudgetScopeMode } from "@/lib/budget-scope";
 import type { BudgetSourceMode } from "@/lib/budget-resolve";
 import { formatReportPeriodLabel } from "@/lib/actual-data-source";
 import type { ReportPeriod } from "@/lib/mock-analytics";
-import { t } from "@/lib/i18n/get-message";
+import { getMessage } from "@/lib/i18n/get-message";
+import type { Locale, MessageParams } from "@/lib/i18n/types";
+import { DEFAULT_LOCALE } from "@/lib/i18n/types";
+
+function m(key: string, params?: MessageParams, locale: Locale = DEFAULT_LOCALE): string {
+  return getMessage(locale, key, params);
+}
 
 export type BudgetDataHintState = {
   hasSupabaseEnv: boolean;
@@ -28,28 +34,31 @@ export type BudgetBannerDisplay = {
 };
 
 /** @deprecated 技术向；页面展示请用 buildBudgetBannerDisplay */
-export function buildBudgetDataSourceMessage(state: BudgetDataHintState): string {
+export function buildBudgetDataSourceMessage(
+  state: BudgetDataHintState,
+  locale: Locale = DEFAULT_LOCALE
+): string {
   if (!state.hasSupabaseEnv) {
-    return t("banner.budget.deprecatedNoEnv");
+    return m("banner.budget.deprecatedNoEnv", undefined, locale);
   }
   if (state.loading) {
-    return t("banner.budget.deprecatedLoading");
+    return m("banner.budget.deprecatedLoading", undefined, locale);
   }
   if (state.scopeMode === "invalid") {
-    return t("banner.budget.deprecatedInvalid", {
+    return m("banner.budget.deprecatedInvalid", {
       reason: state.invalidReason ?? ""
-    });
+    }, locale);
   }
   if (state.queryError) {
-    return t("banner.budget.deprecatedQueryError");
+    return m("banner.budget.deprecatedQueryError", undefined, locale);
   }
   if (state.useDbBudget) {
-    return t("banner.budget.deprecatedReal");
+    return m("banner.budget.deprecatedReal", undefined, locale);
   }
   if (state.budgetSource === "localStorage") {
-    return t("banner.budget.deprecatedLocalDraft");
+    return m("banner.budget.deprecatedLocalDraft", undefined, locale);
   }
-  return t("banner.budget.deprecatedDemo");
+  return m("banner.budget.deprecatedDemo", undefined, locale);
 }
 
 export function resolveBudgetBannerTone(state: BudgetDataHintState): BudgetBannerTone {
@@ -60,70 +69,78 @@ export function resolveBudgetBannerTone(state: BudgetDataHintState): BudgetBanne
   return "demo";
 }
 
-export function budgetBannerBadgeLabel(tone: BudgetBannerTone): string {
-  if (tone === "loading") return t("banner.budget.loading");
-  if (tone === "real") return t("banner.budget.real");
-  return t("banner.budget.demo");
+export function budgetBannerBadgeLabel(
+  tone: BudgetBannerTone,
+  locale: Locale = DEFAULT_LOCALE
+): string {
+  if (tone === "loading") return m("banner.budget.loading", undefined, locale);
+  if (tone === "real") return m("banner.budget.real", undefined, locale);
+  return m("banner.budget.demo", undefined, locale);
 }
 
 export function buildBudgetBannerDisplay(
   state: BudgetDataHintState,
   reportPeriod: ReportPeriod,
-  scopeDescription: string
+  scopeDescription: string,
+  locale: Locale = DEFAULT_LOCALE
 ): BudgetBannerDisplay | null {
   const tone = resolveBudgetBannerTone(state);
   const periodLabel = formatReportPeriodLabel(reportPeriod);
-  const meta = t("banner.actual.periodScope", {
-    period: periodLabel,
-    scope: scopeDescription
-  });
+  const meta = m(
+    "banner.actual.periodScope",
+    {
+      period: periodLabel,
+      scope: scopeDescription
+    },
+    locale
+  );
 
   if (tone === "hidden") {
     return {
-      badge: t("banner.budget.demo"),
+      badge: m("banner.budget.demo", undefined, locale),
       meta,
-      hint: t("banner.budget.invalidScopeHint", {
+      hint: m("banner.budget.invalidScopeHint", {
         reason: state.invalidReason ?? ""
-      }).trim()
+      }, locale).trim()
     };
   }
 
   if (tone === "loading") {
-    return { badge: t("banner.budget.loading"), meta };
+    return { badge: m("banner.budget.loading", undefined, locale), meta };
   }
 
   if (tone === "real") {
-    return { badge: t("banner.budget.real"), meta };
+    return { badge: m("banner.budget.real", undefined, locale), meta };
   }
 
   if (!state.hasSupabaseEnv) {
     return {
-      badge: t("banner.budget.demo"),
+      badge: m("banner.budget.demo", undefined, locale),
       meta,
-      hint: t("banner.budget.noEnvHint")
+      hint: m("banner.budget.noEnvHint", undefined, locale)
     };
   }
 
   if (state.budgetSource === "localStorage") {
     return {
-      badge: t("banner.budget.demo"),
+      badge: m("banner.budget.demo", undefined, locale),
       meta,
-      hint: t("banner.budget.localDraftHint")
+      hint: m("banner.budget.localDraftHint", undefined, locale)
     };
   }
 
   if (state.queryError) {
     return {
-      badge: t("banner.budget.demo"),
+      badge: m("banner.budget.demo", undefined, locale),
       meta,
-      hint: t("banner.budget.queryErrorHint")
+      hint: m("banner.budget.queryErrorHint", undefined, locale)
     };
   }
 
   return {
-    badge: t("banner.budget.demo"),
+    badge: m("banner.budget.demo", undefined, locale),
     meta,
-    hint: t("banner.budget.noTargetHint")
+    hint: m("banner.budget.noTargetHint", undefined, locale)
   };
 }
 

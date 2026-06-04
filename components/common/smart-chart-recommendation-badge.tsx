@@ -4,7 +4,7 @@ import {
   chartTypeLabelZh,
   primaryReasonText
 } from "@/lib/smart-chart/display-labels";
-import { t } from "@/lib/i18n/get-message";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { SmartChartRecommendation } from "@/lib/smart-chart/types";
 
 export function SmartChartRecommendationBadge({
@@ -12,14 +12,16 @@ export function SmartChartRecommendationBadge({
 }: {
   recommendation: SmartChartRecommendation;
 }) {
+  const { locale, t } = useLocale();
+
   if (recommendation.chartType === "empty") {
     return (
       <p className="text-sm text-muted-foreground">{t("smartChart.emptyRecommendation")}</p>
     );
   }
 
-  const chartLabel = chartTypeLabelZh(recommendation.chartType);
-  const reasonText = primaryReasonText(recommendation.reasons);
+  const chartLabel = chartTypeLabelZh(recommendation.chartType, locale);
+  const reasonText = primaryReasonText(recommendation.reasons, locale);
 
   return (
     <div

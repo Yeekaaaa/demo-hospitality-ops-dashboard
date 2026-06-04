@@ -1,5 +1,7 @@
+import { getMessage } from "@/lib/i18n/get-message";
+import type { Locale } from "@/lib/i18n/types";
+import { DEFAULT_LOCALE } from "@/lib/i18n/types";
 import { chartTypeLabelZh } from "@/lib/smart-chart/display-labels";
-import { t } from "@/lib/i18n/get-message";
 import type {
   ResolveSmartChartRendererOptions,
   SmartChartRendererPayload,
@@ -19,9 +21,9 @@ const UNSUPPORTED_CHART_TYPES = new Set<SmartChartType>([
   "kpi_card"
 ]);
 
-function unsupportedMessage(chartType: SmartChartType): string {
-  const label = chartTypeLabelZh(chartType);
-  return t("smartChart.unsupportedPlan", { chartType: label });
+function unsupportedMessage(chartType: SmartChartType, locale: Locale): string {
+  const label = chartTypeLabelZh(chartType, locale);
+  return getMessage(locale, "smartChart.unsupportedPlan", { chartType: label });
 }
 
 function lineRendererHint(payload: SmartChartRendererPayload): SmartChartRendererHint {
@@ -41,7 +43,8 @@ function plan(
 export function resolveSmartChartRendererPlan(
   recommendation: SmartChartRecommendation,
   payload: SmartChartRendererPayload,
-  options?: ResolveSmartChartRendererOptions
+  options?: ResolveSmartChartRendererOptions,
+  locale: Locale = DEFAULT_LOCALE
 ): SmartChartRendererPlan {
   const { chartType } = recommendation;
   const unsupportedFallback = options?.unsupportedFallback ?? "message_only";
@@ -109,7 +112,7 @@ export function resolveSmartChartRendererPlan(
       supported: false,
       chartType,
       fallback: "message_only",
-      messageZh: t("smartChart.financialPayloadMissing"),
+      messageZh: getMessage(locale, "smartChart.financialPayloadMissing"),
       warnings: ["financial_payload_missing"]
     });
   }
@@ -120,7 +123,7 @@ export function resolveSmartChartRendererPlan(
       chartType,
       rendererHint: recommendation.rendererHint,
       fallback: unsupportedFallback,
-      messageZh: unsupportedMessage(chartType),
+      messageZh: unsupportedMessage(chartType, locale),
       warnings: recommendation.warnings
     });
   }
@@ -130,7 +133,7 @@ export function resolveSmartChartRendererPlan(
     chartType,
     rendererHint: recommendation.rendererHint,
     fallback: "message_only",
-    messageZh: recommendation.labelZh || t("smartChart.unknownChartType"),
+    messageZh: recommendation.labelZh || getMessage(locale, "smartChart.unknownChartType"),
     warnings: ["unknown_chart_type"]
   });
 }

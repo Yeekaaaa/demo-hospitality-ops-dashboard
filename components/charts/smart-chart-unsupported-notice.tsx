@@ -1,7 +1,7 @@
 "use client";
 
 import { chartTypeLabelZh } from "@/lib/smart-chart/display-labels";
-import { t } from "@/lib/i18n/get-message";
+import { useLocale } from "@/lib/i18n/locale-context";
 import type { SmartChartType } from "@/lib/smart-chart/types";
 
 type SmartChartUnsupportedNoticeProps = {
@@ -13,7 +13,8 @@ export function SmartChartUnsupportedNotice({
   chartType,
   messageZh
 }: SmartChartUnsupportedNoticeProps) {
-  const chartLabel = chartTypeLabelZh(chartType);
+  const { locale, t } = useLocale();
+  const chartLabel = chartTypeLabelZh(chartType, locale);
   const text =
     messageZh ?? t("smartChart.unsupported", { chartType: chartLabel });
 

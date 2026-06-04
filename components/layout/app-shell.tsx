@@ -7,11 +7,13 @@ import { ActiveStoresProvider } from "@/contexts/active-stores-context";
 import { StorePeriodProvider } from "@/contexts/store-period-context";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { LocaleProvider } from "@/lib/i18n/locale-context";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
+    <LocaleProvider>
     <ActualOverridesProvider>
       <BudgetOverridesProvider>
         <ActiveStoresProvider>
@@ -27,5 +29,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </ActiveStoresProvider>
       </BudgetOverridesProvider>
     </ActualOverridesProvider>
+    </LocaleProvider>
   );
 }

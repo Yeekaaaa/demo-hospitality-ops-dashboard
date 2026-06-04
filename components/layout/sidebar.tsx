@@ -23,7 +23,7 @@ import {
   Users,
   Wallet
 } from "lucide-react";
-import { t } from "@/lib/i18n/get-message";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -118,6 +118,7 @@ export function Sidebar({
   onToggle: () => void;
 }) {
   const pathname = usePathname();
+  const { t } = useLocale();
 
   return (
     <aside

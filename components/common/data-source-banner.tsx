@@ -13,6 +13,7 @@ import {
   type BudgetDataHintState,
   type BudgetBannerTone
 } from "@/lib/budget-data-source";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { cn } from "@/lib/utils";
 
 export type ActualBannerInput = {
@@ -87,6 +88,7 @@ function BannerRowBlock({ row }: { row: BannerRow }) {
 }
 
 export function DataSourceBanner({ actual, budget, className }: Props) {
+  const { locale } = useLocale();
   const rows: BannerRow[] = [];
 
   if (actual) {
@@ -99,7 +101,8 @@ export function DataSourceBanner({ actual, budget, className }: Props) {
       scopeDescription: actual.scopeDescription,
       forceDemo: actual.forceDemo,
       hasSupabaseEnv: actual.hasSupabaseEnv,
-      compact: withBudget && !actual.forceDemo
+      compact: withBudget && !actual.forceDemo,
+      locale
     });
     rows.push({
       key: "actual",
@@ -115,7 +118,8 @@ export function DataSourceBanner({ actual, budget, className }: Props) {
     const display = buildBudgetBannerDisplay(
       budget,
       budget.reportPeriod,
-      budget.scopeDescription
+      budget.scopeDescription,
+      locale
     );
     if (display) {
       rows.push({

@@ -7,10 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { t } from "@/lib/i18n/get-message";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useLocale();
   return (
     <div className="grid min-h-screen grid-cols-1 bg-slate-50 lg:grid-cols-2">
       <section className="flex flex-col justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 p-10 text-white lg:p-16">

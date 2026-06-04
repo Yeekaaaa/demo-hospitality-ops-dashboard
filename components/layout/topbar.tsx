@@ -17,6 +17,9 @@ import {
   TOPBAR_FISCAL_YEAR_OPTIONS
 } from "@/lib/topbar-period-options";
 import { formatStoreOptionLabel } from "@/src/lib/supabase";
+import { useLocale } from "@/lib/i18n/locale-context";
+import type { Locale } from "@/lib/i18n/types";
+import { SUPPORTED_LOCALES } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 
 /** 预算管理、财务报表使用页面内「筛选与账期」，不展示顶栏全局门店/期间 */
@@ -42,6 +45,7 @@ const selectTriggerClass = "h-10";
 
 export function Topbar() {
   const pathname = usePathname();
+  const { locale, setLocale, t } = useLocale();
   const hideGlobalFilters = shouldHideGlobalTopbarFilters(pathname);
   const restaurantOpsPage = isRestaurantOperationsPath(pathname);
 
@@ -188,6 +192,23 @@ export function Topbar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+          <div className="w-[108px] shrink-0 sm:w-[112px]">
+            <Select
+              value={locale}
+              onValueChange={(value) => setLocale(value as Locale)}
+            >
+              <SelectTrigger className={selectTriggerClass} aria-label={t("locale.label")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SUPPORTED_LOCALES.map((code) => (
+                  <SelectItem key={code} value={code}>
+                    {code === "zh-CN" ? t("locale.zhCN") : t("locale.enUS")}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Badge className="hidden bg-blue-50 text-blue-800 sm:inline-flex">
             老板
           </Badge>

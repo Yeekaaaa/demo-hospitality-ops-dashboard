@@ -4,6 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode
@@ -45,6 +46,10 @@ export function LocaleProvider({
   initialLocale?: Locale;
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale);
+
+  useEffect(() => {
+    setLocaleState(readStoredLocale());
+  }, []);
 
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);

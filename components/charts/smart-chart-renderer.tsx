@@ -15,7 +15,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { chartTypeLabelZh } from "@/lib/smart-chart/display-labels";
-import { t } from "@/lib/i18n/get-message";
+import { useLocale } from "@/lib/i18n/locale-context";
 import { recommendSmartChart } from "@/lib/smart-chart/recommend";
 import { resolveSmartChartRendererPlan } from "@/lib/smart-chart/resolve-renderer";
 import type {
@@ -29,6 +29,7 @@ import {
   type SmartChartTableRow
 } from "@/lib/smart-chart/transforms";
 import type { ChartUnit } from "@/lib/smart-chart/types";
+import type { Locale, MessageParams } from "@/lib/i18n/types";
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 
@@ -63,10 +64,16 @@ function formatCellNumber(value: number): string {
   return value.toLocaleString("zh-CN", { maximumFractionDigits: 2 });
 }
 
-function SmartChartEmptyState({ message }: { message?: string }) {
+function SmartChartEmptyState({
+  message,
+  emptyLabel = "暂无足够数据推荐图表。"
+}: {
+  message?: string;
+  emptyLabel?: string;
+}) {
   return (
     <div className="flex min-h-[120px] items-center justify-center rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground">
-      {message ?? t("smartChart.emptyRecommendation")}
+      {message ?? emptyLabel}
     </div>
   );
 }
@@ -120,12 +127,8 @@ function SmartChartTableFallback({ rows }: { rows: SmartChartTableRow[] }) {
   );
 }
 
-function SmartChartPreviewHint({ chartLabel }: { chartLabel: string }) {
-  return (
-    <p className="text-sm text-muted-foreground">
-      {t("smartChart.previewHint", { chartType: chartLabel })}
-    </p>
-  );
+function SmartChartPreviewHint({ previewHint }: { previewHint: string }) {
+  return <p className="text-sm text-muted-foreground">{previewHint}</p>;
 }
 
 function SmartChartPreviewChart({
@@ -168,20 +171,25 @@ function SmartChartRendererBody({
   payload,
   mode,
   fallback,
-  children
+  children,
+  locale,
+  t
 }: {
   plan: SmartChartRendererPlan;
   payload: SmartChartRendererProps["payload"];
   mode: SmartChartRendererProps["mode"];
   fallback: SmartChartRendererFallback;
   children?: SmartChartRendererProps["children"];
+  locale: Locale;
+  t: (key: string, params?: MessageParams) => string;
 }) {
-  const chartLabel = chartTypeLabelZh(plan.chartType);
+  const chartLabel = chartTypeLabelZh(plan.chartType, locale);
+  const previewHint = t("smartChart.previewHint", { chartType: chartLabel });
   const legacyChart = useLegacyChartFallback(fallback, children);
 
   if (plan.chartType === "empty" || plan.fallback === "empty") {
     if (legacyChart) return <>{children}</>;
-    return <SmartChartEmptyState />;
+    return <SmartChartEmptyState emptyLabel={t("smartChart.emptyRecommendation")} />;
   }
 
   if (plan.chartType === "none") {
@@ -221,7 +229,7 @@ function SmartChartRendererBody({
     if (mode === "preview" || mode === "replace") {
       return <SmartChartPreviewChart plan={plan} payload={payload} />;
     }
-    return <SmartChartPreviewHint chartLabel={chartLabel} />;
+    return <SmartChartPreviewHint previewHint={previewHint} />;
   }
 
   if (legacyChart) {
@@ -242,6 +250,8 @@ export function SmartChartRenderer({
   className,
   resolveOptions
 }: SmartChartRendererProps) {
+  const { locale, t } = useLocale();
+
   const recommendation = useMemo(() => {
     if (recommendationProp) return recommendationProp;
     if (input) return recommendSmartChart(input);
@@ -250,13 +260,15 @@ export function SmartChartRenderer({
 
   const plan = useMemo(() => {
     if (!recommendation) return null;
-    return resolveSmartChartRendererPlan(recommendation, payload, resolveOptions);
-  }, [recommendation, payload, resolveOptions]);
+    return resolveSmartChartRendererPlan(recommendation, payload, resolveOptions, locale);
+  }, [recommendation, payload, resolveOptions, locale]);
+
+  const emptyLabel = t("smartChart.emptyRecommendation");
 
   if (!recommendation || !plan) {
     return (
       <div className={cn("space-y-3", className)}>
-        <SmartChartEmptyState />
+        <SmartChartEmptyState emptyLabel={emptyLabel} />
       </div>
     );
   }
@@ -266,7 +278,14 @@ export function SmartChartRenderer({
       {showRecommendation ? (
         <SmartChartRecommendationBadge recommendation={recommendation} />
       ) : null}
-      <SmartChartRendererBody plan={plan} payload={payload} mode={mode} fallback={fallback}>
+      <SmartChartRendererBody
+        plan={plan}
+        payload={payload}
+        mode={mode}
+        fallback={fallback}
+        locale={locale}
+        t={t}
+      >
         {children}
       </SmartChartRendererBody>
     </div>

@@ -4,7 +4,13 @@
 
 import type { ReportPeriod } from "@/lib/mock-analytics";
 import { toDbPeriod } from "@/lib/data-caliber";
-import { t } from "@/lib/i18n/get-message";
+import { getMessage } from "@/lib/i18n/get-message";
+import type { Locale, MessageParams } from "@/lib/i18n/types";
+import { DEFAULT_LOCALE } from "@/lib/i18n/types";
+
+function m(key: string, params?: MessageParams, locale: Locale = DEFAULT_LOCALE): string {
+  return getMessage(locale, key, params);
+}
 
 export type ActualDataSourceMode = "supabase" | "mock_fallback" | "mock_only";
 
@@ -26,12 +32,15 @@ export function resolveActualDataSourceMode(
 }
 
 /** @deprecated 技术向标签；页面展示请用 actualBannerBadgeLabel / buildActualBannerDisplay */
-export function actualDataSourceLabel(mode: ActualDataSourceMode): string {
-  if (mode === "supabase") return t("banner.actual.real");
+export function actualDataSourceLabel(
+  mode: ActualDataSourceMode,
+  locale: Locale = DEFAULT_LOCALE
+): string {
+  if (mode === "supabase") return m("banner.actual.real", undefined, locale);
   if (mode === "mock_fallback") {
-    return t("banner.actualDeprecated.demoFallbackLong");
+    return m("banner.actualDeprecated.demoFallbackLong", undefined, locale);
   }
-  return t("banner.actualDeprecated.demoNoEnvLong");
+  return m("banner.actualDeprecated.demoNoEnvLong", undefined, locale);
 }
 
 /** @deprecated 技术向；页面展示请用 formatReportPeriodLabel */
@@ -59,12 +68,13 @@ export function resolveActualBannerTone(params: {
 
 export function actualBannerBadgeLabel(
   tone: ActualBannerTone,
-  forceDemo?: boolean
+  forceDemo?: boolean,
+  locale: Locale = DEFAULT_LOCALE
 ): string {
-  if (forceDemo) return t("banner.actual.demo");
-  if (tone === "loading") return t("banner.actual.loading");
-  if (tone === "real") return t("banner.actual.real");
-  return t("banner.actual.demo");
+  if (forceDemo) return m("banner.actual.demo", undefined, locale);
+  if (tone === "loading") return m("banner.actual.loading", undefined, locale);
+  if (tone === "real") return m("banner.actual.real", undefined, locale);
+  return m("banner.actual.demo", undefined, locale);
 }
 
 export function buildActualBannerDisplay(params: {
@@ -74,45 +84,58 @@ export function buildActualBannerDisplay(params: {
   forceDemo?: boolean;
   hasSupabaseEnv?: boolean;
   compact?: boolean;
+  locale?: Locale;
 }): ActualBannerDisplay {
-  const { tone, periodLabel, scopeDescription, forceDemo, hasSupabaseEnv, compact } = params;
-  const meta = t("banner.actual.periodScope", {
-    period: periodLabel,
-    scope: scopeDescription
-  });
+  const {
+    tone,
+    periodLabel,
+    scopeDescription,
+    forceDemo,
+    hasSupabaseEnv,
+    compact,
+    locale = DEFAULT_LOCALE
+  } = params;
+  const meta = m(
+    "banner.actual.periodScope",
+    {
+      period: periodLabel,
+      scope: scopeDescription
+    },
+    locale
+  );
 
   if (tone === "loading") {
-    return { badge: t("banner.actual.loading"), meta };
+    return { badge: m("banner.actual.loading", undefined, locale), meta };
   }
 
   if (tone === "real") {
     return {
-      badge: t("banner.actual.real"),
+      badge: m("banner.actual.real", undefined, locale),
       meta,
-      hint: compact ? undefined : t("banner.actual.realHint")
+      hint: compact ? undefined : m("banner.actual.realHint", undefined, locale)
     };
   }
 
   if (forceDemo) {
     return {
-      badge: t("banner.actual.demo"),
+      badge: m("banner.actual.demo", undefined, locale),
       meta,
-      hint: t("banner.actual.demoForceHint")
+      hint: m("banner.actual.demoForceHint", undefined, locale)
     };
   }
 
   if (hasSupabaseEnv === false) {
     return {
-      badge: t("banner.actual.demo"),
+      badge: m("banner.actual.demo", undefined, locale),
       meta,
-      hint: t("banner.actual.demoNoEnvHint")
+      hint: m("banner.actual.demoNoEnvHint", undefined, locale)
     };
   }
 
   return {
-    badge: t("banner.actual.demo"),
+    badge: m("banner.actual.demo", undefined, locale),
     meta,
-    hint: t("banner.actual.demoNoRowsHint")
+    hint: m("banner.actual.demoNoRowsHint", undefined, locale)
   };
 }
 
