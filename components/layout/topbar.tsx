@@ -33,7 +33,7 @@ function shouldHideGlobalTopbarFilters(pathname: string | null): boolean {
   );
 }
 
-/** 餐饮运营页：顶栏仅展示在营餐饮门店（当前仅西北赋） */
+/** 餐饮运营页：顶栏仅展示在营餐饮门店（当前仅示例餐厅） */
 function isRestaurantOperationsPath(pathname: string | null): boolean {
   if (!pathname) return false;
   return (
@@ -70,7 +70,7 @@ export function Topbar() {
   const restaurantStoreLabel =
     restaurantStores[0] != null
       ? getStoreDisplayName(restaurantStores[0])
-      : "西北赋";
+      : "示例餐厅";
 
   useEffect(() => {
     if (hideGlobalFilters || storesLoading) return;
@@ -229,9 +229,9 @@ export function Topbar() {
                 className="flex items-center gap-2 rounded-md border bg-background px-2 py-1.5 shadow-sm transition-colors hover:bg-muted/50"
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">张总</AvatarFallback>
+                  <AvatarFallback className="text-xs">演示</AvatarFallback>
                 </Avatar>
-                <span className="hidden text-sm sm:inline">张明</span>
+                <span className="hidden text-sm sm:inline">演示用户</span>
                 <ChevronDown className="h-4 w-4 opacity-60" />
               </button>
             </DropdownMenuTrigger>

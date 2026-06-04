@@ -321,7 +321,7 @@ export default function HotelOperationsPage() {
         </h2>
         <div className="grid gap-3 md:grid-cols-3">
           <MetricCard
-            标题="华住管理费"
+            标题="品牌管理费"
             数值={formatWan(kpis.华住管理费)}
             变化=""
             趋势="neutral"
@@ -364,10 +364,10 @@ export default function HotelOperationsPage() {
           </CardHeader>
           <CardContent className="space-y-2.5 text-sm leading-relaxed">
             <p className="rounded-md border border-slate-200/80 bg-background/80 p-2.5 text-slate-800">
-              沐家·全季槐安西、雨航·全季中山西：ADR 与利润表现优于均值。
+              示例酒店 A、示例酒店 C：ADR 与利润表现优于均值。
             </p>
             <p className="rounded-md border border-slate-200/80 bg-background/80 p-2.5 text-slate-800">
-              泽桐·星程中山西：入住率领先，房价带略低，适合加强协议价管理。
+              示例酒店 B：入住率领先，房价带略低，适合加强协议价管理。
             </p>
           </CardContent>
         </Card>

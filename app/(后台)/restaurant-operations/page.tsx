@@ -33,9 +33,9 @@ export default function RestaurantOperationsPage() {
   const restaurantStoreId = restaurantStoreIds[0] ?? null;
 
   const restaurantStoreLabel = useMemo(() => {
-    if (!restaurantStoreId) return "西北赋（未在经营门店列表中）";
+    if (!restaurantStoreId) return "示例餐厅（未在经营门店列表中）";
     const s = supabaseStores.find((x) => x.id === restaurantStoreId);
-    return s ? getStoreDisplayName(s) : "西北赋";
+    return s ? getStoreDisplayName(s) : "示例餐厅";
   }, [restaurantStoreId, supabaseStores]);
 
   const actualDataScope = useMemo(

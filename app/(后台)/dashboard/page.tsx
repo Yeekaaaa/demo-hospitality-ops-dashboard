@@ -651,10 +651,10 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2.5 text-sm leading-relaxed">
             <div className="rounded-md border border-amber-200/80 bg-amber-50/80 p-2.5 text-amber-950">
-              西北赋：调味品批次临期 3 批，建议优先出库。
+              示例餐厅：调味品批次临期 3 批，建议优先出库。
             </div>
             <div className="rounded-md border border-red-200/80 bg-red-50/80 p-2.5 text-red-900">
-              沐家·全季槐安西：布草低于安全库存，已生成补货建议。
+              示例酒店 A：布草低于安全库存，已生成补货建议。
             </div>
             <div className="rounded-md bg-muted/50 p-2.5 text-muted-foreground">
               待审批：报销 2 单、采购申请 2 单、请假 1 单，预计今日内处理完毕。
