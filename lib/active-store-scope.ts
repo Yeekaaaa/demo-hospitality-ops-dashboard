@@ -1,5 +1,5 @@
 /**
- * 当前经营管理后台的默认可用门店范围（不含面馆、今源-绥德等）
+ * 当前经营管理后台的默认可用门店范围（不含演示停业店等）
  * 不删除 Supabase 数据，仅在前台筛选、聚合与展示时排除。
  */
 
@@ -7,17 +7,22 @@ import type { StoreListItem } from "@/src/lib/supabase";
 import { formatStoreOptionLabel } from "@/src/lib/supabase";
 import { 全部门店值, 门店主数据, type StoreMaster } from "@/lib/store-master";
 
-export const ACTIVE_STORE_EXCLUDED_KEYWORDS = ["面馆", "今源", "绥德"] as const;
+export const ACTIVE_STORE_EXCLUDED_KEYWORDS = ["示例面馆", "示例停业", "示例酒店 D"] as const;
 
-export const ACTIVE_STORE_INCLUDED_KEYWORDS = ["沐家", "泽桐", "雨航", "西北赋"] as const;
+export const ACTIVE_STORE_INCLUDED_KEYWORDS = [
+  "示例酒店 A",
+  "示例酒店 B",
+  "示例酒店 C",
+  "示例餐厅"
+] as const;
 
-const HOTEL_KEYWORDS = ["沐家", "泽桐", "雨航"] as const;
-const RESTAURANT_KEYWORDS = ["西北赋"] as const;
+const HOTEL_KEYWORDS = ["示例酒店 A", "示例酒店 B", "示例酒店 C"] as const;
+const RESTAURANT_KEYWORDS = ["示例餐厅"] as const;
 
 /** 顶栏 / 筛选卡片展示用 */
-export const ACTIVE_STORE_SCOPE_SHORT_LABEL = "石家庄经营门店";
+export const ACTIVE_STORE_SCOPE_SHORT_LABEL = "示例城市经营门店";
 
-export const ACTIVE_STORE_SCOPE_DETAIL_LABEL = "沐家、泽桐、雨航、西北赋";
+export const ACTIVE_STORE_SCOPE_DETAIL_LABEL = "示例酒店 A、示例酒店 B、示例酒店 C、示例餐厅";
 
 export type ActiveStoreLike = {
   id?: string;
@@ -136,23 +141,22 @@ export function filterActiveMockStores(): StoreMaster[] {
 
 export function getDefaultExampleStoreLabel(): string {
   const active = filterActiveMockStores();
-  const zetong = active.find(
-    (s) => s.品牌.includes("泽桐") || s.门店名称.includes("星程中山西")
+  const hotelB = active.find(
+    (s) => s.品牌.includes("示例酒店 B") || s.门店名称.includes("商务店")
   );
-  const pick = zetong ?? active[0];
-  return pick ? `${pick.品牌}-${pick.门店名称}` : "泽桐-星程中山西";
+  const pick = hotelB ?? active[0];
+  return pick ? `${pick.品牌}-${pick.门店名称}` : "示例酒店 B-商务店";
 }
 
 export function findDefaultActiveSupabaseStoreId(stores: readonly StoreListItem[]): string | null {
   const active = filterActiveStores([...stores]);
-  const zetong = active.find(
+  const hotelB = active.find(
     (s) =>
-      s.name.includes("泽桐") ||
-      s.name.includes("星程中山西") ||
-      s.brand.includes("泽桐") ||
-      (s.name.includes("星程") && s.name.includes("中山西"))
+      s.name.includes("示例酒店 B") ||
+      s.name.includes("商务店") ||
+      s.brand.includes("示例酒店 B")
   );
-  return zetong?.id ?? active[0]?.id ?? null;
+  return hotelB?.id ?? active[0]?.id ?? null;
 }
 
 const UUID_RE =

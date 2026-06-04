@@ -1,20 +1,20 @@
 /**
  * 门店开业账期（month → period_value 如 2026-01）
- * 优先匹配 Supabase store_id；其次 mock id；最后门店显示名/简称
+ * 优先匹配 mock id；其次门店显示名/简称。Supabase UUID 请在部署环境本地配置，勿写入公开仓库。
  */
 
 import { 门店主数据 } from "@/lib/store-master";
 
 /** 门店显示名 / 常用简称 → 开业账期 YYYY-MM */
 export const STORE_OPENING_PERIOD_BY_LABEL: Record<string, string> = {
-  "沐家-全季槐安西": "2026-01",
-  "沐家｜全季槐安西｜石家庄": "2026-01",
-  "泽桐-星程中山西": "2026-01",
-  "泽桐｜星程中山西｜石家庄": "2026-01",
-  "雨航-全季中山西": "2026-03",
-  "雨航｜全季中山西｜石家庄": "2026-03",
-  "今源-绥德": "2026-04",
-  "今源｜绥德": "2026-04"
+  "示例酒店 A-核心店": "2026-01",
+  "示例酒店 A｜核心店｜示例城市": "2026-01",
+  "示例酒店 B-商务店": "2026-01",
+  "示例酒店 B｜商务店｜示例城市": "2026-01",
+  "示例酒店 C-新店": "2026-03",
+  "示例酒店 C｜新店｜示例城市": "2026-03",
+  "示例停业店": "2026-04",
+  "示例酒店 D｜停业店": "2026-04"
 };
 
 /** mock 门店 id → 开业账期 */
@@ -25,13 +25,11 @@ export const STORE_OPENING_PERIOD_BY_MOCK_ID: Record<string, string> = {
   "hotel-jinyuan-suide": "2026-04"
 };
 
-/** Supabase UUID → 开业账期（部署后可按库内 stores.id 补充） */
-export const STORE_OPENING_PERIOD_BY_STORE_ID: Record<string, string> = {
-  "9e0e7d83-5924-4936-8fd6-9f2b03bf2b7c": "2026-01",
-  "6854fde3-b180-412a-a361-451dc322296a": "2026-01",
-  "5cd0f9a8-c6df-4364-b6c6-31ecee8d9667": "2026-03",
-  "fc23db16-179a-44aa-b184-304534c07a8b": "2026-04"
-};
+/**
+ * Supabase store UUID → 开业账期（仅本地/私有部署配置，公开仓库保持为空）
+ * 示例：STORE_OPENING_PERIOD_BY_STORE_ID["<your-store-uuid>"] = "2026-01"
+ */
+export const STORE_OPENING_PERIOD_BY_STORE_ID: Record<string, string> = {};
 
 function canonLabel(s: string): string {
   return s.replace(/\s/g, "").replace(/[｜·|]/g, "-").toLowerCase();

@@ -12,7 +12,7 @@ export const enUSMessages = {
   },
 
   nav: {
-    brandTitle: "Fengtin Hospitality",
+    brandTitle: "Demo Hospitality",
     brandSubtitle: "Operations Platform",
     expand: "Expand",
     collapse: "Collapse",
@@ -47,8 +47,8 @@ export const enUSMessages = {
   auth: {
     login: {
       badge: "Internal operations platform",
-      companyName: "Fengtin Hotel Management Co., Ltd.",
-      productName: "Hotel & F&B operations platform",
+      companyName: "Demo Hospitality Group Co., Ltd.",
+      productName: "Demo Hotel & F&B Operations Platform",
       tagline:
         "Unified hotel and restaurant operating data for leadership, finance, and store managers.",
       title: "Sign in",

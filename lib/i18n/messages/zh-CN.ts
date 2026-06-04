@@ -12,7 +12,7 @@ export const zhCNMessages = {
   },
 
   nav: {
-    brandTitle: "河北沣庭酒店餐饮",
+    brandTitle: "示例酒店餐饮",
     brandSubtitle: "经营管理平台",
     expand: "展开",
     collapse: "收起",
@@ -47,8 +47,8 @@ export const zhCNMessages = {
   auth: {
     login: {
       badge: "企业内部经营管理系统",
-      companyName: "河北沣庭酒店管理有限公司",
-      productName: "河北沣庭酒店餐饮经营管理平台",
+      companyName: "示例酒店餐饮管理有限公司",
+      productName: "示例酒店餐饮经营管理平台",
       tagline:
         "统一管理酒店与餐饮经营数据，提升经营效率与决策能力。系统面向老板、财务、店长、餐厅经理与管理人员提供稳定、高效、可追溯的数据工作台。",
       title: "欢迎登录",
