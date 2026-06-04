@@ -28,6 +28,7 @@ import {
 import { financialLineFromOperatingSubjectsOnly } from "@/lib/actual-data-subject-bridge";
 import { cockpitSnapshotFromOperatingSubjects } from "@/lib/actual-data-cockpit-bridge";
 import { DataSourceBanner } from "@/components/common/data-source-banner";
+import { SmartChartRecommendationBadge } from "@/components/common/smart-chart-recommendation-badge";
 import { dashboardToActualDataScope } from "@/lib/dashboard-actual-scope";
 import { resolveBudgetScopeFromQueryScope } from "@/lib/budget-scope";
 import { formatWan, getDashboardKpis } from "@/lib/mock-analytics";
@@ -57,6 +58,8 @@ import {
   type CockpitStoreRankingRow,
   type DashboardTrendPoint
 } from "@/src/lib/dashboard-data-service";
+import { fromDashboardTrend } from "@/lib/smart-chart/adapters";
+import { recommendSmartChart } from "@/lib/smart-chart/recommend";
 
 function mockAnalyticsStoreScope(storeId: string): string {
   if (storeId === 全部门店值) return storeId;
@@ -233,6 +236,19 @@ export default function DashboardPage() {
   );
   const trend =
     trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
+
+  const trendChartRecommendation = useMemo(() => {
+    const input = fromDashboardTrend(
+      trend.map((p) => ({
+        周期: p.周期,
+        收入: p.收入,
+        成本: p.成本,
+        利润: p.利润
+      })),
+      "dashboard"
+    );
+    return recommendSmartChart(input);
+  }, [trend]);
 
   const [cockpitRankingDb, setCockpitRankingDb] = useState<CockpitStoreRankingRow[] | null>(null);
   useEffect(() => {
@@ -601,10 +617,11 @@ export default function DashboardPage() {
 
       <section className="grid gap-4 xl:grid-cols-3">
         <Card className="xl:col-span-2 border-slate-200 shadow-sm">
-          <CardHeader className="pb-2">
+          <CardHeader className="space-y-2 pb-2">
             <CardTitle className="text-base font-medium">
               收入 / 成本 / 利润趋势（近 6 个账期）
             </CardTitle>
+            <SmartChartRecommendationBadge recommendation={trendChartRecommendation} />
           </CardHeader>
           <CardContent>
             <CockpitTrendChart data={trend} />
