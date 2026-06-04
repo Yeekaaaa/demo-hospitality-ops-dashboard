@@ -1,4 +1,5 @@
 import { chartTypeLabelZh } from "@/lib/smart-chart/display-labels";
+import { t } from "@/lib/i18n/get-message";
 import type {
   ResolveSmartChartRendererOptions,
   SmartChartRendererPayload,
@@ -20,7 +21,7 @@ const UNSUPPORTED_CHART_TYPES = new Set<SmartChartType>([
 
 function unsupportedMessage(chartType: SmartChartType): string {
   const label = chartTypeLabelZh(chartType);
-  return `系统推荐${label}，该图表类型暂未接入自动渲染，请继续查看页面原有图表或表格。`;
+  return t("smartChart.unsupportedPlan", { chartType: label });
 }
 
 function lineRendererHint(payload: SmartChartRendererPayload): SmartChartRendererHint {
@@ -108,7 +109,7 @@ export function resolveSmartChartRendererPlan(
       supported: false,
       chartType,
       fallback: "message_only",
-      messageZh: "缺少财务趋势数据，无法渲染双折线图",
+      messageZh: t("smartChart.financialPayloadMissing"),
       warnings: ["financial_payload_missing"]
     });
   }
@@ -129,7 +130,7 @@ export function resolveSmartChartRendererPlan(
     chartType,
     rendererHint: recommendation.rendererHint,
     fallback: "message_only",
-    messageZh: recommendation.labelZh || "暂不支持的图表类型",
+    messageZh: recommendation.labelZh || t("smartChart.unknownChartType"),
     warnings: ["unknown_chart_type"]
   });
 }

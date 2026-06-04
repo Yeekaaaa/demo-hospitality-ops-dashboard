@@ -2,6 +2,8 @@
  * 指标卡 / 数据来源等用户可见标签（内部常量勿直接渲染）
  */
 
+import { t } from "@/lib/i18n/get-message";
+
 /** MetricCard「变化」等字段的内部取值 */
 export const METRIC_SOURCE_TAG = {
   operatingActual: "operating_actual",
@@ -20,48 +22,51 @@ const LEGACY_SOURCE_ALIASES: Record<string, string> = {
   演示: METRIC_SOURCE_TAG.demoKpi
 };
 
-const SOURCE_LABEL_ZH: Record<string, string> = {
-  [METRIC_SOURCE_TAG.operatingActual]: "经营实际数据",
-  [METRIC_SOURCE_TAG.budgetTarget]: "预算数据",
-  [METRIC_SOURCE_TAG.demo]: "演示数据",
-  [METRIC_SOURCE_TAG.budgetLocalDraft]: "预算调整",
-  [METRIC_SOURCE_TAG.demoKpi]: "演示"
+const SOURCE_I18N_KEY: Record<string, string> = {
+  [METRIC_SOURCE_TAG.operatingActual]: "dataSource.operatingActual",
+  [METRIC_SOURCE_TAG.budgetTarget]: "dataSource.budgetData",
+  [METRIC_SOURCE_TAG.demo]: "dataSource.demo",
+  [METRIC_SOURCE_TAG.budgetLocalDraft]: "dataSource.budgetLocalDraft",
+  [METRIC_SOURCE_TAG.demoKpi]: "dataSource.demoKpi"
 };
 
 /** 将内部来源标记转为用户可见中文 */
 export function formatMetricSourceLabel(source: string): string {
   const key = LEGACY_SOURCE_ALIASES[source] ?? source;
-  return SOURCE_LABEL_ZH[key] ?? source;
+  const messageKey = SOURCE_I18N_KEY[key];
+  return messageKey ? t(messageKey) : source;
 }
 
 /** 预算管理页：数据口径说明（用户可见） */
-export const BUDGET_DATA_CALIBER_USER_HINT =
-  "经营实际数据记录已导入的经营结果；预算数据记录已保存的预算；本机预算草稿仅作演示备用，不会覆盖经营实际数据。";
+export const BUDGET_DATA_CALIBER_USER_HINT = t("dataSource.budgetCaliberHint");
 
 export function budgetSaveStatusNoDatabase(): string {
-  return "未连接预算数据库：已保存至本机预算草稿。";
+  return t("dataSource.budgetSaveNoDatabase");
 }
 
 export function budgetSaveStatusAggregateScope(): string {
-  return "当前为汇总范围，未写入云端预算（请选择具体门店后再保存；汇总请用 Excel 按店导入）。";
+  return t("dataSource.budgetSaveAggregateScope");
 }
 
 export function budgetSaveStatusSavedToDatabase(): string {
-  return "已保存至预算数据库，并同步本机草稿备份。";
+  return t("dataSource.budgetSaveSuccess");
 }
 
 export function budgetSaveStatusDatabaseWriteFailed(error: string): string {
-  return `云端保存失败：${error}（已写入本机草稿备份）。`;
+  return t("dataSource.budgetSaveFailed", { error });
 }
 
 export function budgetImportStatusSynced(successCount: number): string {
-  return `已导入 ${successCount} 条至预算数据。`;
+  return t("dataSource.budgetImportSynced", { count: successCount });
 }
 
 export function budgetImportStatusPartialSync(successCount: number, failCount: number): string {
-  return `云端同步 ${successCount} 条成功、${failCount} 条失败；已写入本机草稿。`;
+  return t("dataSource.budgetImportPartial", {
+    success: successCount,
+    fail: failCount
+  });
 }
 
 export function budgetImportStatusLocalOnly(): string {
-  return "已导入至本机预算草稿。";
+  return t("dataSource.budgetImportLocalOnly");
 }

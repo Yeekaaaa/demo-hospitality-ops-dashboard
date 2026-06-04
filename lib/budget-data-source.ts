@@ -2,6 +2,7 @@ import type { BudgetScopeMode } from "@/lib/budget-scope";
 import type { BudgetSourceMode } from "@/lib/budget-resolve";
 import { formatReportPeriodLabel } from "@/lib/actual-data-source";
 import type { ReportPeriod } from "@/lib/mock-analytics";
+import { t } from "@/lib/i18n/get-message";
 
 export type BudgetDataHintState = {
   hasSupabaseEnv: boolean;
@@ -29,24 +30,26 @@ export type BudgetBannerDisplay = {
 /** @deprecated 技术向；页面展示请用 buildBudgetBannerDisplay */
 export function buildBudgetDataSourceMessage(state: BudgetDataHintState): string {
   if (!state.hasSupabaseEnv) {
-    return "预算：演示或本地预算数据（未连接预算库）";
+    return t("banner.budget.deprecatedNoEnv");
   }
   if (state.loading) {
-    return "预算：加载中";
+    return t("banner.budget.deprecatedLoading");
   }
   if (state.scopeMode === "invalid") {
-    return `预算：当前范围无效。${state.invalidReason ?? ""}`;
+    return t("banner.budget.deprecatedInvalid", {
+      reason: state.invalidReason ?? ""
+    });
   }
   if (state.queryError) {
-    return `预算：查询暂不可用，已使用演示预算`;
+    return t("banner.budget.deprecatedQueryError");
   }
   if (state.useDbBudget) {
-    return "预算：真实预算数据";
+    return t("banner.budget.deprecatedReal");
   }
   if (state.budgetSource === "localStorage") {
-    return "预算：本机已保存的预算草稿";
+    return t("banner.budget.deprecatedLocalDraft");
   }
-  return "预算：演示预算数据";
+  return t("banner.budget.deprecatedDemo");
 }
 
 export function resolveBudgetBannerTone(state: BudgetDataHintState): BudgetBannerTone {
@@ -58,9 +61,9 @@ export function resolveBudgetBannerTone(state: BudgetDataHintState): BudgetBanne
 }
 
 export function budgetBannerBadgeLabel(tone: BudgetBannerTone): string {
-  if (tone === "loading") return "加载中";
-  if (tone === "real") return "真实预算数据";
-  return "演示数据";
+  if (tone === "loading") return t("banner.budget.loading");
+  if (tone === "real") return t("banner.budget.real");
+  return t("banner.budget.demo");
 }
 
 export function buildBudgetBannerDisplay(
@@ -70,52 +73,57 @@ export function buildBudgetBannerDisplay(
 ): BudgetBannerDisplay | null {
   const tone = resolveBudgetBannerTone(state);
   const periodLabel = formatReportPeriodLabel(reportPeriod);
-  const meta = `账期：${periodLabel} · 范围：${scopeDescription}`;
+  const meta = t("banner.actual.periodScope", {
+    period: periodLabel,
+    scope: scopeDescription
+  });
 
   if (tone === "hidden") {
     return {
-      badge: "演示数据",
+      badge: t("banner.budget.demo"),
       meta,
-      hint: `当前筛选范围无效，未加载预算数据。${state.invalidReason ?? ""}`.trim()
+      hint: t("banner.budget.invalidScopeHint", {
+        reason: state.invalidReason ?? ""
+      }).trim()
     };
   }
 
   if (tone === "loading") {
-    return { badge: "加载中", meta };
+    return { badge: t("banner.budget.loading"), meta };
   }
 
   if (tone === "real") {
-    return { badge: "真实预算数据", meta };
+    return { badge: t("banner.budget.real"), meta };
   }
 
   if (!state.hasSupabaseEnv) {
     return {
-      badge: "演示数据",
+      badge: t("banner.budget.demo"),
       meta,
-      hint: "系统未连接预算库，当前为演示或本机保存的预算"
+      hint: t("banner.budget.noEnvHint")
     };
   }
 
   if (state.budgetSource === "localStorage") {
     return {
-      badge: "演示数据",
+      badge: t("banner.budget.demo"),
       meta,
-      hint: "本账期无库内预算目标，当前使用本机已保存的预算草稿"
+      hint: t("banner.budget.localDraftHint")
     };
   }
 
   if (state.queryError) {
     return {
-      badge: "演示数据",
+      badge: t("banner.budget.demo"),
       meta,
-      hint: "库内查询暂不可用，当前为演示预算"
+      hint: t("banner.budget.queryErrorHint")
     };
   }
 
   return {
-    badge: "演示数据",
+    badge: t("banner.budget.demo"),
     meta,
-    hint: "本账期在所选范围内暂无已录入的预算目标"
+    hint: t("banner.budget.noTargetHint")
   };
 }
 

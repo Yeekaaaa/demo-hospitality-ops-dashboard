@@ -1,6 +1,7 @@
 "use client";
 
 import { chartTypeLabelZh } from "@/lib/smart-chart/display-labels";
+import { t } from "@/lib/i18n/get-message";
 import type { SmartChartType } from "@/lib/smart-chart/types";
 
 type SmartChartUnsupportedNoticeProps = {
@@ -14,8 +15,7 @@ export function SmartChartUnsupportedNotice({
 }: SmartChartUnsupportedNoticeProps) {
   const chartLabel = chartTypeLabelZh(chartType);
   const text =
-    messageZh ??
-    `系统推荐${chartLabel}，该推荐图表暂未接入自动渲染，当前可继续查看页面原有图表或表格。`;
+    messageZh ?? t("smartChart.unsupported", { chartType: chartLabel });
 
   return (
     <div

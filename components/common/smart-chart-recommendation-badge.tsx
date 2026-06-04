@@ -4,6 +4,7 @@ import {
   chartTypeLabelZh,
   primaryReasonText
 } from "@/lib/smart-chart/display-labels";
+import { t } from "@/lib/i18n/get-message";
 import type { SmartChartRecommendation } from "@/lib/smart-chart/types";
 
 export function SmartChartRecommendationBadge({
@@ -13,7 +14,7 @@ export function SmartChartRecommendationBadge({
 }) {
   if (recommendation.chartType === "empty") {
     return (
-      <p className="text-sm text-muted-foreground">暂无足够数据推荐图表。</p>
+      <p className="text-sm text-muted-foreground">{t("smartChart.emptyRecommendation")}</p>
     );
   }
 
@@ -27,12 +28,12 @@ export function SmartChartRecommendationBadge({
       aria-live="polite"
     >
       <p>
-        <span className="text-muted-foreground">推荐图表：</span>
+        <span className="text-muted-foreground">{t("smartChart.recommendationLabel")}</span>
         <span className="font-medium text-slate-900">{chartLabel}</span>
       </p>
       {reasonText ? (
         <p className="mt-1 text-muted-foreground">
-          <span className="text-muted-foreground">原因：</span>
+          <span className="text-muted-foreground">{t("smartChart.reasonLabel")}</span>
           {reasonText}
         </p>
       ) : null}

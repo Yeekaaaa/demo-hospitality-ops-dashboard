@@ -4,6 +4,7 @@
 
 import type { ReportPeriod } from "@/lib/mock-analytics";
 import { toDbPeriod } from "@/lib/data-caliber";
+import { t } from "@/lib/i18n/get-message";
 
 export type ActualDataSourceMode = "supabase" | "mock_fallback" | "mock_only";
 
@@ -26,11 +27,11 @@ export function resolveActualDataSourceMode(
 
 /** @deprecated 技术向标签；页面展示请用 actualBannerBadgeLabel / buildActualBannerDisplay */
 export function actualDataSourceLabel(mode: ActualDataSourceMode): string {
-  if (mode === "supabase") return "真实经营数据";
+  if (mode === "supabase") return t("banner.actual.real");
   if (mode === "mock_fallback") {
-    return "演示数据（该账期暂无已导入的经营数据）";
+    return t("banner.actualDeprecated.demoFallbackLong");
   }
-  return "演示数据（未连接经营数据库）";
+  return t("banner.actualDeprecated.demoNoEnvLong");
 }
 
 /** @deprecated 技术向；页面展示请用 formatReportPeriodLabel */
@@ -60,10 +61,10 @@ export function actualBannerBadgeLabel(
   tone: ActualBannerTone,
   forceDemo?: boolean
 ): string {
-  if (forceDemo) return "演示数据";
-  if (tone === "loading") return "加载中";
-  if (tone === "real") return "真实经营数据";
-  return "演示数据";
+  if (forceDemo) return t("banner.actual.demo");
+  if (tone === "loading") return t("banner.actual.loading");
+  if (tone === "real") return t("banner.actual.real");
+  return t("banner.actual.demo");
 }
 
 export function buildActualBannerDisplay(params: {
@@ -75,40 +76,43 @@ export function buildActualBannerDisplay(params: {
   compact?: boolean;
 }): ActualBannerDisplay {
   const { tone, periodLabel, scopeDescription, forceDemo, hasSupabaseEnv, compact } = params;
-  const meta = `账期：${periodLabel} · 范围：${scopeDescription}`;
+  const meta = t("banner.actual.periodScope", {
+    period: periodLabel,
+    scope: scopeDescription
+  });
 
   if (tone === "loading") {
-    return { badge: "加载中", meta };
+    return { badge: t("banner.actual.loading"), meta };
   }
 
   if (tone === "real") {
     return {
-      badge: "真实经营数据",
+      badge: t("banner.actual.real"),
       meta,
-      hint: compact ? undefined : "当前展示已导入的经营数据"
+      hint: compact ? undefined : t("banner.actual.realHint")
     };
   }
 
   if (forceDemo) {
     return {
-      badge: "演示数据",
+      badge: t("banner.actual.demo"),
       meta,
-      hint: "该模块尚未接入经营导入，当前数字仅用于界面预览"
+      hint: t("banner.actual.demoForceHint")
     };
   }
 
   if (hasSupabaseEnv === false) {
     return {
-      badge: "演示数据",
+      badge: t("banner.actual.demo"),
       meta,
-      hint: "系统尚未连接经营数据库，导入后可查看真实经营数据"
+      hint: t("banner.actual.demoNoEnvHint")
     };
   }
 
   return {
-    badge: "演示数据",
+    badge: t("banner.actual.demo"),
     meta,
-    hint: "该账期暂无真实经营数据，当前数字仅用于界面预览，请勿作为经营决策依据"
+    hint: t("banner.actual.demoNoRowsHint")
   };
 }
 

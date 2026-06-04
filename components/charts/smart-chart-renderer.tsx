@@ -15,6 +15,7 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { chartTypeLabelZh } from "@/lib/smart-chart/display-labels";
+import { t } from "@/lib/i18n/get-message";
 import { recommendSmartChart } from "@/lib/smart-chart/recommend";
 import { resolveSmartChartRendererPlan } from "@/lib/smart-chart/resolve-renderer";
 import type {
@@ -65,7 +66,7 @@ function formatCellNumber(value: number): string {
 function SmartChartEmptyState({ message }: { message?: string }) {
   return (
     <div className="flex min-h-[120px] items-center justify-center rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground">
-      {message ?? "暂无足够数据推荐图表。"}
+      {message ?? t("smartChart.emptyRecommendation")}
     </div>
   );
 }
@@ -122,7 +123,7 @@ function SmartChartTableFallback({ rows }: { rows: SmartChartTableRow[] }) {
 function SmartChartPreviewHint({ chartLabel }: { chartLabel: string }) {
   return (
     <p className="text-sm text-muted-foreground">
-      推荐{chartLabel}。接入页面后可在此区域展示趋势图，当前为推荐说明模式。
+      {t("smartChart.previewHint", { chartType: chartLabel })}
     </p>
   );
 }

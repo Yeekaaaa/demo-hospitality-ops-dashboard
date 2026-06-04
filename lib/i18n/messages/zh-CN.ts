@@ -77,8 +77,24 @@ export const zhCNMessages = {
     budget: {
       loading: "加载中",
       real: "真实预算数据",
-      demo: "演示预算",
-      hidden: ""
+      demo: "演示数据",
+      hidden: "",
+      noEnvHint: "系统未连接预算库，当前为演示或本机保存的预算",
+      localDraftHint: "本账期无库内预算目标，当前使用本机已保存的预算草稿",
+      queryErrorHint: "库内查询暂不可用，当前为演示预算",
+      noTargetHint: "本账期在所选范围内暂无已录入的预算目标",
+      invalidScopeHint: "当前筛选范围无效，未加载预算数据。{reason}",
+      deprecatedNoEnv: "预算：演示或本地预算数据（未连接预算库）",
+      deprecatedLoading: "预算：加载中",
+      deprecatedInvalid: "预算：当前范围无效。{reason}",
+      deprecatedQueryError: "预算：查询暂不可用，已使用演示预算",
+      deprecatedReal: "预算：真实预算数据",
+      deprecatedLocalDraft: "预算：本机已保存的预算草稿",
+      deprecatedDemo: "预算：演示预算数据"
+    },
+    actualDeprecated: {
+      demoFallbackLong: "演示数据（该账期暂无已导入的经营数据）",
+      demoNoEnvLong: "演示数据（未连接经营数据库）"
     }
   },
 
@@ -109,6 +125,10 @@ export const zhCNMessages = {
     previewHint: "推荐{chartType}。接入页面后可在此区域展示趋势图，当前为推荐说明模式。",
     unsupported:
       "系统推荐{chartType}，该推荐图表暂未接入自动渲染，当前可继续查看页面原有图表或表格。",
+    unsupportedPlan:
+      "系统推荐{chartType}，该图表类型暂未接入自动渲染，请继续查看页面原有图表或表格。",
+    financialPayloadMissing: "缺少财务趋势数据，无法渲染双折线图",
+    unknownChartType: "暂不支持的图表类型",
     chartType: {
       line: "折线图",
       line_dual: "实际 vs 预算折线图",
