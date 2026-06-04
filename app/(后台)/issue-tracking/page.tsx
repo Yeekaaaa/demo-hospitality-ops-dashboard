@@ -119,9 +119,7 @@ export default function IssueTrackingPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">问题闭环追踪</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          数据保存在本机浏览器 <code className="rounded bg-muted px-1 text-xs">localStorage</code>（
-          <code className="rounded bg-muted px-1 text-xs">fengtin_issue_tracking_v1</code>
-          ），未写入 Supabase。可从「异常预警中心」带入草稿。
+          记录保存在本机浏览器，换设备或清除站点数据后将不可见；未同步至云端。可从「异常预警中心」带入草稿。
         </p>
       </div>
 

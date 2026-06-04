@@ -80,6 +80,7 @@ import {
   fromFinancialTrendRows,
   fromFinancialTrendRowsSingleMetric
 } from "@/lib/smart-chart/adapters";
+import { formatMetricSourceLabel, METRIC_SOURCE_TAG } from "@/lib/metric-source-labels";
 import { recommendSmartChart } from "@/lib/smart-chart/recommend";
 import type { SmartChartMetric } from "@/lib/smart-chart/types";
 
@@ -101,12 +102,6 @@ const stickySubjectHeadClass =
   "sticky left-0 z-20 min-w-[140px] bg-slate-50 shadow-[2px_0_4px_-2px_rgba(15,23,42,0.06)]";
 const stickySubjectCellClass =
   "sticky left-0 z-10 bg-white shadow-[2px_0_4px_-2px_rgba(15,23,42,0.06)]";
-
-function displayMetricSourceLabel(change: string): string {
-  if (change === "actual_data") return "经营实际";
-  if (change === "budget_data") return "预算目标";
-  return change;
-}
 
 function resolveFinancialReportTrendQuery(filter: FinancialReportFilter): {
   storeId: string;
@@ -500,7 +495,7 @@ export default function FinancialReportsPage() {
   }, [useDbActual, operatingSubjects, actual, budget]);
 
   const kpiTop = useMemo(() => {
-    const tag = useDbActual ? "actual_data" : "演示";
+    const tag = useDbActual ? METRIC_SOURCE_TAG.operatingActual : METRIC_SOURCE_TAG.demoKpi;
     const os = operatingSubjects;
 
     if (useDbActual) {
@@ -1019,7 +1014,7 @@ export default function FinancialReportsPage() {
                 key={k.标题}
                 标题={k.标题}
                 数值={k.数值}
-                变化={displayMetricSourceLabel(k.变化)}
+                变化={formatMetricSourceLabel(k.变化)}
                 趋势={k.趋势}
               />
             ))}
@@ -1040,7 +1035,7 @@ export default function FinancialReportsPage() {
             key={k.标题}
             标题={k.标题}
             数值={k.数值}
-            变化={displayMetricSourceLabel(k.变化)}
+            变化={formatMetricSourceLabel(k.变化)}
             趋势={k.趋势}
           />
         ))}

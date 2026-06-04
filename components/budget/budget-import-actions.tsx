@@ -27,7 +27,7 @@ export function BudgetImportActions({
           Excel 导入预算
         </Button>
         <p className="w-full text-xs text-muted-foreground">
-          手动录入与 Excel 导入均写入本地预算覆盖层（localStorage），后续可扩展数据库入库。
+          手动录入与 Excel 导入均写入本机预算草稿；连接预算数据库后将同步至云端。
         </p>
       </CardContent>
     </Card>

@@ -33,14 +33,7 @@ import {
   getTrendSeriesFromSupabase,
   type DashboardTrendPoint
 } from "@/src/lib/dashboard-data-service";
-
-function displayMetricSourceLabel(change: string): string {
-  if (change === "actual_data") return "经营实际";
-  if (change === "budget_data") return "预算目标";
-  if (change === "mock demo") return "演示数据";
-  if (change === "budget_overrides") return "预算调整";
-  return change;
-}
+import { formatMetricSourceLabel, METRIC_SOURCE_TAG } from "@/lib/metric-source-labels";
 
 export default function HotelOperationsPage() {
   const { storeId, reportPeriod, periodLabel } = useStorePeriod();
@@ -174,8 +167,8 @@ export default function HotelOperationsPage() {
   const trend =
     trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
 
-  const dataTag = useDbActual ? "actual_data" : "mock demo";
-  const dataTagLabel = displayMetricSourceLabel(dataTag);
+  const dataTag = useDbActual ? METRIC_SOURCE_TAG.operatingActual : METRIC_SOURCE_TAG.demo;
+  const dataTagLabel = formatMetricSourceLabel(dataTag);
 
   return (
     <div className="space-y-5">
@@ -297,14 +290,18 @@ export default function HotelOperationsPage() {
             数值={formatWan(hotelRevenueActual)}
             变化=""
             趋势="neutral"
-            数据来源={displayMetricSourceLabel(useDbActual ? "actual_data" : "mock demo")}
+            数据来源={formatMetricSourceLabel(
+              useDbActual ? METRIC_SOURCE_TAG.operatingActual : METRIC_SOURCE_TAG.demo
+            )}
           />
           <MetricCard
             标题="本期预算收入（酒店）"
             数值={formatWan(budgetFin.营业收入)}
             变化=""
             趋势="neutral"
-            数据来源={displayMetricSourceLabel(useDbBudget ? "budget_data" : "budget_overrides")}
+            数据来源={formatMetricSourceLabel(
+              useDbBudget ? METRIC_SOURCE_TAG.budgetTarget : METRIC_SOURCE_TAG.budgetLocalDraft
+            )}
           />
           <MetricCard
             标题="收入预算完成率"

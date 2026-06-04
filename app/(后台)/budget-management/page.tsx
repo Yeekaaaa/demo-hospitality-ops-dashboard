@@ -81,6 +81,16 @@ import {
   syncBudgetOverridesToSupabase
 } from "@/src/lib/budget-import-to-supabase";
 import { hasSupabaseBudgetEnv } from "@/src/lib/budget-data-service";
+import {
+  BUDGET_DATA_CALIBER_USER_HINT,
+  budgetImportStatusLocalOnly,
+  budgetImportStatusPartialSync,
+  budgetImportStatusSynced,
+  budgetSaveStatusAggregateScope,
+  budgetSaveStatusDatabaseWriteFailed,
+  budgetSaveStatusNoDatabase,
+  budgetSaveStatusSavedToDatabase
+} from "@/lib/metric-source-labels";
 
 const GROUP_FILTERS: BudgetGroupFilter[] = ["全部", "收入", "酒店运营", "成本", "利润"];
 
@@ -312,13 +322,11 @@ export default function BudgetManagementPage() {
     const normalizedDraft = normalizeBudgetSubjectDraft(draft);
     setBudgetOverride(mockFallbackScope, reportPeriod, normalizedDraft, budgetFilter.budgetVersion);
     if (!hasBudgetSupabaseEnv) {
-      setSaveStatus("未配置 Supabase：已仅写入 localStorage budget_overrides");
+      setSaveStatus(budgetSaveStatusNoDatabase());
       return;
     }
     if (!canEditSingleStore || !budgetFilter.storeId) {
-      setSaveStatus(
-        "当前为汇总 scope，未写入 Supabase budget_data（请选具体门店后再保存；汇总请用 Excel 按店导入）"
-      );
+      setSaveStatus(budgetSaveStatusAggregateScope());
       return;
     }
     const res = await saveBudgetDraftToSupabase(
@@ -328,12 +336,10 @@ export default function BudgetManagementPage() {
       normalizedDraft
     );
     if (res.ok) {
-      setSaveStatus(
-        `已 upsert Supabase budget_data（store_id=${budgetFilter.storeId}）并同步 localStorage 备份`
-      );
+      setSaveStatus(budgetSaveStatusSavedToDatabase());
       refreshBudgetData();
     } else {
-      setSaveStatus(`Supabase 写入失败：${res.error}（已写入 localStorage 备份）`);
+      setSaveStatus(budgetSaveStatusDatabaseWriteFailed(res.error ?? "未知错误"));
     }
   }, [
     mockFallbackScope,
@@ -354,12 +360,12 @@ export default function BudgetManagementPage() {
         const sync = await syncBudgetOverridesToSupabase(entries, supabaseStores);
         setSaveStatus(
           sync.failCount === 0
-            ? `已导入 ${sync.successCount} 条至 Supabase budget_data`
-            : `Supabase 同步 ${sync.successCount} 成功 / ${sync.failCount} 失败；已写入本地`
+            ? budgetImportStatusSynced(sync.successCount)
+            : budgetImportStatusPartialSync(sync.successCount, sync.failCount)
         );
         refreshBudgetData();
       } else {
-        setSaveStatus("已导入至 localStorage budget_overrides");
+        setSaveStatus(budgetImportStatusLocalOnly());
       }
     },
     [mergeBudgetOverrides, supabaseStores, refreshBudgetData]
@@ -401,10 +407,7 @@ export default function BudgetManagementPage() {
               <span className="font-medium">{getBudgetVersionLabel(budgetFilter.budgetVersion)}</span>
             </p>
             <p className="text-xs text-muted-foreground">{DATA_CALIBER_RULES.budgetManagementTarget}</p>
-            <p className="text-xs text-muted-foreground">
-              actual_data = 实际经营结果 · budget_data = 预算目标 · budget_overrides = 本地演示 fallback，不覆盖
-              actual_data
-            </p>
+            <p className="text-xs text-muted-foreground">{BUDGET_DATA_CALIBER_USER_HINT}</p>
             <p className="text-xs text-muted-foreground">
               总营业收入 / 总营业成本 / 经营利润 = 老板核心财务口径
             </p>
@@ -414,7 +417,7 @@ export default function BudgetManagementPage() {
             <p className="text-xs text-muted-foreground">
               预算查询模式：
               {budgetScopeResolution.mode === "single"
-                ? "单店 UUID"
+                ? "单店"
                 : budgetScopeResolution.mode === "aggregate"
                   ? "多店聚合"
                   : "无效"}
@@ -637,7 +640,7 @@ export default function BudgetManagementPage() {
               {getBudgetVersionLabel(budgetFilter.budgetVersion)} · 共 {BUDGET_MANAGEMENT_CATALOG.length}{" "}
               个预算科目（老板口径，无重复成本/利润项）
               {hasSupabaseEnv && !actualDataLoading && (hasDbRows || Object.keys(budgetLabelSubjects).length > 0)
-                ? " · 已接入 actual_data"
+                ? " · 已接入经营实际数据"
                 : ""}
             </p>
           </div>
@@ -791,7 +794,7 @@ export default function BudgetManagementPage() {
             <div>
               <CardTitle>预算手工录入（{storeLabel}）</CardTitle>
               <p className="text-sm text-muted-foreground">
-                优先保存至 Supabase budget_data；无环境时写入 localStorage
+                优先保存至预算数据库；未连接时写入本机预算草稿
               </p>
             </div>
             <div className="flex flex-wrap gap-2">

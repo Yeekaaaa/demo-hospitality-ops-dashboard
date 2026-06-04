@@ -16,15 +16,10 @@ import {
   getTrendSeriesFromSupabase,
   type DashboardTrendPoint
 } from "@/src/lib/dashboard-data-service";
+import { formatMetricSourceLabel, METRIC_SOURCE_TAG } from "@/lib/metric-source-labels";
 
 const MOCK_RESTAURANT_ID = "rest-xibeifu-sjz";
 const RESTAURANT_KPI_FIELD_HINT = "该指标需补充对应经营字段后展示。";
-
-function displayMetricSourceLabel(change: string): string {
-  if (change === "actual_data") return "经营实际";
-  if (change === "mock demo") return "演示数据";
-  return change;
-}
 
 export default function RestaurantOperationsPage() {
   const { reportPeriod, periodLabel } = useStorePeriod();
@@ -67,8 +62,8 @@ export default function RestaurantOperationsPage() {
     [operatingSubjects]
   );
 
-  const dataTag = useDbActual ? "actual_data" : "mock demo";
-  const dataTagLabel = displayMetricSourceLabel(dataTag);
+  const dataTag = useDbActual ? METRIC_SOURCE_TAG.operatingActual : METRIC_SOURCE_TAG.demo;
+  const dataTagLabel = formatMetricSourceLabel(dataTag);
 
   const [trendFromDb, setTrendFromDb] = useState<DashboardTrendPoint[] | null>(null);
 

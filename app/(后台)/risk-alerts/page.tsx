@@ -87,9 +87,8 @@ export default function RiskAlertsPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900">异常预警中心</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          基于当前账期 <span className="font-medium text-foreground">{periodLabel}</span> 的{" "}
-          <code className="rounded bg-muted px-1 py-0.5 text-xs">actual_data</code>{" "}
-          与上期对比自动生成（门店范围与顶部导航一致）。
+          基于当前账期 <span className="font-medium text-foreground">{periodLabel}</span>{" "}
+          的经营实际数据与上期对比自动生成（门店范围与顶部导航一致）。
         </p>
       </div>
 
@@ -139,7 +138,9 @@ export default function RiskAlertsPage() {
           {loading ? (
             <p className="text-sm text-muted-foreground">加载中…</p>
           ) : emptyData ? (
-            <p className="text-sm text-muted-foreground">暂无预警数据（当前账期无经营数据或未配置 Supabase）。</p>
+            <p className="text-sm text-muted-foreground">
+              暂无预警数据（当前账期无经营数据或未配置经营数据连接）。
+            </p>
           ) : alerts.length === 0 ? (
             <p className="text-sm text-muted-foreground">暂无预警数据（未触发规则阈值）。</p>
           ) : (

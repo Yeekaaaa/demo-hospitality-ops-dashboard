@@ -422,8 +422,7 @@ export default function OperatingDataTemplatePage() {
         <CardHeader>
           <CardTitle className="text-base">导入历史记录</CardTitle>
           <p className="text-sm text-muted-foreground">
-            展示最近 10 次成功执行「确认导入」的记录（时间、文件名、成功/失败行数、操作人）。数据保存在本机浏览器
-            localStorage，换设备或清除站点数据后将不可见。
+            展示最近 10 次成功执行「确认导入」的记录（时间、文件名、成功/失败行数、操作人）。记录保存在本机浏览器，换设备或清除站点数据后将不可见。
           </p>
         </CardHeader>
         <CardContent className="overflow-x-auto">

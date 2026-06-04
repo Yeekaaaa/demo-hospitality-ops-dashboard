@@ -59,6 +59,7 @@ import {
   type DashboardTrendPoint
 } from "@/src/lib/dashboard-data-service";
 import { fromDashboardTrend } from "@/lib/smart-chart/adapters";
+import { formatMetricSourceLabel } from "@/lib/metric-source-labels";
 import { recommendSmartChart } from "@/lib/smart-chart/recommend";
 
 function mockAnalyticsStoreScope(storeId: string): string {
@@ -83,13 +84,6 @@ function resolveRankingBoardScope(
 }
 
 type RankTab = "revenue" | "profit" | "margin";
-
-/** 预算对比卡底部标签：避免 actual_data 等技术词露出 */
-function metricCardFooterLabel(change: string): string {
-  if (change === "actual_data") return "经营实际";
-  if (change === "budget_data") return "预算目标";
-  return change;
-}
 
 function emptySnapshot(): CockpitSnapshot {
   return {
@@ -602,7 +596,7 @@ export default function DashboardPage() {
                 key={k.标题}
                 标题={k.标题}
                 数值={k.数值}
-                变化={metricCardFooterLabel(k.变化)}
+                变化={formatMetricSourceLabel(k.变化)}
                 趋势={k.趋势}
               />
             ))}
