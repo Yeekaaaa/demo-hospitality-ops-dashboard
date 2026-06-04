@@ -1,5 +1,7 @@
+import type { ReactNode } from "react";
 import type {
   SmartChartCategoryRow,
+  SmartChartInput,
   SmartChartPoint,
   SmartChartRecommendation,
   SmartChartRendererHint,
@@ -54,6 +56,21 @@ export type SmartChartRendererDataAdapter = (
 export type ResolveSmartChartRendererOptions = {
   /** 未接入 chartType 的 fallback（默认 message_only） */
   unsupportedFallback?: Extract<SmartChartRendererFallback, "message_only" | "table">;
+};
+
+export type SmartChartRendererProps = {
+  /** 推荐依据；与 recommendation 至少提供其一 */
+  input?: SmartChartInput;
+  recommendation?: SmartChartRecommendation;
+  payload: SmartChartRendererPayload;
+  mode?: SmartChartRenderMode;
+  /** 未接入或失败时的降级策略（默认 message_only） */
+  fallback?: SmartChartRendererFallback;
+  showRecommendation?: boolean;
+  /** replace / legacy 模式下的原图表占位 */
+  children?: ReactNode;
+  className?: string;
+  resolveOptions?: ResolveSmartChartRendererOptions;
 };
 
 export type { SmartChartRecommendation };
