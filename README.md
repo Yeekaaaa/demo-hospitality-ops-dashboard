@@ -1,4 +1,8 @@
 # 示例酒店餐饮经营管理平台
+## Live Demo
+
+Online demo: https://
+demo-hospitality-ops-dashboard.vercel.app
 
 面向酒店与餐饮的多门店经营数据管理后台（**Demo / Portfolio**）。仓库内公司名、门店名、人员与示例金额均为**虚构**，仅供界面与数据口径演示，不代表任何真实经营主体。
 
