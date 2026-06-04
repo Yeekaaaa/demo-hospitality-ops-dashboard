@@ -7,10 +7,26 @@ export const SUPPORTED_LOCALES: readonly Locale[] = ["zh-CN", "en-US"] as const;
 
 const ENV_DEFAULT_LOCALE_KEY = "NEXT_PUBLIC_DEFAULT_LOCALE";
 
-/** 构建时读取的默认语言（Vercel / .env）；非法或缺失时回退 zh-CN */
+function localeFromEnvString(raw: string | undefined): Locale | null {
+  const trimmed = raw?.trim();
+  if (trimmed === "zh-CN" || trimmed === "en-US") return trimmed;
+  return null;
+}
+
+/** 浏览器端优先读 <html data-default-locale>（与根 layout 部署配置一致） */
+export function readDefaultLocaleFromDocument(): Locale | null {
+  if (typeof document === "undefined") return null;
+  return localeFromEnvString(document.documentElement.getAttribute("data-default-locale") ?? undefined);
+}
+
+/** 默认语言：客户端以 html data 为准，服务端/构建时读 NEXT_PUBLIC_DEFAULT_LOCALE */
 export function getDefaultLocaleFromEnv(): Locale {
-  const raw = process.env[ENV_DEFAULT_LOCALE_KEY]?.trim();
-  if (raw === "zh-CN" || raw === "en-US") return raw;
+  const fromDom = readDefaultLocaleFromDocument();
+  if (fromDom) return fromDom;
+
+  const fromEnv = localeFromEnvString(process.env[ENV_DEFAULT_LOCALE_KEY]);
+  if (fromEnv) return fromEnv;
+
   return DEFAULT_LOCALE;
 }
 

@@ -31,8 +31,8 @@ function isLocale(value: string): value is Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(value);
 }
 
-function readAndSyncStoredLocale(): Locale {
-  const envDefault = getDefaultLocaleFromEnv();
+function readAndSyncStoredLocale(envDefaultOverride?: Locale): Locale {
+  const envDefault = envDefaultOverride ?? getDefaultLocaleFromEnv();
   if (typeof window === "undefined") return envDefault;
 
   try {
@@ -79,7 +79,9 @@ export function LocaleProvider({
   initialLocale?: Locale;
 }) {
   const [locale, setLocaleState] = useState<Locale>(() =>
-    typeof window !== "undefined" ? readAndSyncStoredLocale() : initialLocale
+    typeof window !== "undefined"
+      ? readAndSyncStoredLocale(initialLocale)
+      : initialLocale
   );
 
   const setLocale = useCallback((next: Locale) => {

@@ -5,6 +5,7 @@ export { zhCNMessages } from "@/lib/i18n/messages/zh-CN";
 export {
   DEFAULT_LOCALE,
   getDefaultLocaleFromEnv,
+  readDefaultLocaleFromDocument,
   LOCALE_DEFAULT_SNAPSHOT_KEY,
   LOCALE_STORAGE_KEY,
   resolvePersistedLocale,

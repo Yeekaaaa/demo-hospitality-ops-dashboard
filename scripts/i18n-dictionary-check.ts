@@ -15,7 +15,7 @@ import { getMessage, t } from "../lib/i18n/get-message";
 import { enUSMessages } from "../lib/i18n/messages/en-US";
 import { zhCNMessages } from "../lib/i18n/messages/zh-CN";
 import type { Locale, MessageTree } from "../lib/i18n/types";
-import { resolvePersistedLocale } from "../lib/i18n/types";
+import { getDefaultLocaleFromEnv, resolvePersistedLocale } from "../lib/i18n/types";
 import {
   formatMetricSourceLabel,
   METRIC_SOURCE_TAG
@@ -151,6 +151,27 @@ assert(
   'getMessage("en-US", "auth.login.title") is English',
   getMessage("en-US", "auth.login.title") === "Sign in"
 );
+assert(
+  "en-US auth.login.title does not equal zh-CN when en key exists",
+  getMessage("en-US", "auth.login.title") !== getMessage("zh-CN", "auth.login.title")
+);
+
+const prevDefaultLocale = process.env.NEXT_PUBLIC_DEFAULT_LOCALE;
+process.env.NEXT_PUBLIC_DEFAULT_LOCALE = "en-US";
+assert(
+  "getDefaultLocaleFromEnv respects NEXT_PUBLIC_DEFAULT_LOCALE=en-US",
+  getDefaultLocaleFromEnv() === "en-US"
+);
+process.env.NEXT_PUBLIC_DEFAULT_LOCALE = "zh-CN";
+assert(
+  "getDefaultLocaleFromEnv respects NEXT_PUBLIC_DEFAULT_LOCALE=zh-CN",
+  getDefaultLocaleFromEnv() === "zh-CN"
+);
+if (prevDefaultLocale === undefined) {
+  delete process.env.NEXT_PUBLIC_DEFAULT_LOCALE;
+} else {
+  process.env.NEXT_PUBLIC_DEFAULT_LOCALE = prevDefaultLocale;
+}
 assert(
   'getMessage("zh-CN", "auth.login.title") is Chinese',
   getMessage("zh-CN", "auth.login.title") === "欢迎登录"
