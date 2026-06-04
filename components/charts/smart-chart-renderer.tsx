@@ -29,6 +29,14 @@ import {
 } from "@/lib/smart-chart/transforms";
 import type { ChartUnit } from "@/lib/smart-chart/types";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
+
+function useLegacyChartFallback(
+  fallback: SmartChartRendererFallback,
+  children: ReactNode | undefined
+): children is ReactNode {
+  return fallback === "legacy_children" && children != null;
+}
 
 function unitLabelZh(unit: ChartUnit): string {
   switch (unit) {
@@ -168,17 +176,27 @@ function SmartChartRendererBody({
   children?: SmartChartRendererProps["children"];
 }) {
   const chartLabel = chartTypeLabelZh(plan.chartType);
+  const legacyChart = useLegacyChartFallback(fallback, children);
 
   if (plan.chartType === "empty" || plan.fallback === "empty") {
+    if (legacyChart) return <>{children}</>;
     return <SmartChartEmptyState />;
   }
 
   if (plan.chartType === "none") {
+    if (legacyChart) {
+      return (
+        <>
+          <SmartChartMessageBlock message={plan.messageZh} />
+          {children}
+        </>
+      );
+    }
     return <SmartChartMessageBlock message={plan.messageZh} />;
   }
 
   if (!plan.supported) {
-    if (fallback === "legacy_children" && children) {
+    if (legacyChart) {
       return <>{children}</>;
     }
     if (fallback === "table" && (payload.categories?.length ?? 0) > 0) {
@@ -190,18 +208,22 @@ function SmartChartRendererBody({
   }
 
   if (plan.chartType === "table" || plan.fallback === "table") {
+    if (legacyChart) return <>{children}</>;
     const rows = categoriesToTableRows(payload.categories);
     return <SmartChartTableFallback rows={rows} />;
   }
 
   if (plan.chartType === "line" || plan.chartType === "line_dual") {
+    if (legacyChart) {
+      return <>{children}</>;
+    }
     if (mode === "preview" || mode === "replace") {
       return <SmartChartPreviewChart plan={plan} payload={payload} />;
     }
     return <SmartChartPreviewHint chartLabel={chartLabel} />;
   }
 
-  if (fallback === "legacy_children" && children) {
+  if (legacyChart) {
     return <>{children}</>;
   }
 

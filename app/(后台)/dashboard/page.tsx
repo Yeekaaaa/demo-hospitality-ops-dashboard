@@ -28,7 +28,7 @@ import {
 import { financialLineFromOperatingSubjectsOnly } from "@/lib/actual-data-subject-bridge";
 import { cockpitSnapshotFromOperatingSubjects } from "@/lib/actual-data-cockpit-bridge";
 import { DataSourceBanner } from "@/components/common/data-source-banner";
-import { SmartChartRecommendationBadge } from "@/components/common/smart-chart-recommendation-badge";
+import { SmartChartRenderer } from "@/components/charts/smart-chart-renderer";
 import { dashboardToActualDataScope } from "@/lib/dashboard-actual-scope";
 import { resolveBudgetScopeFromQueryScope } from "@/lib/budget-scope";
 import { formatWan, getDashboardKpis } from "@/lib/mock-analytics";
@@ -237,18 +237,32 @@ export default function DashboardPage() {
   const trend =
     trendFromDb && trendFromDb.length > 0 ? trendFromDb : mockTrend.length > 0 ? mockTrend : [];
 
-  const trendChartRecommendation = useMemo(() => {
-    const input = fromDashboardTrend(
-      trend.map((p) => ({
-        周期: p.周期,
-        收入: p.收入,
-        成本: p.成本,
-        利润: p.利润
-      })),
-      "dashboard"
-    );
-    return recommendSmartChart(input);
-  }, [trend]);
+  const trendSmartChartInput = useMemo(
+    () =>
+      fromDashboardTrend(
+        trend.map((p) => ({
+          周期: p.周期,
+          收入: p.收入,
+          成本: p.成本,
+          利润: p.利润
+        })),
+        "dashboard"
+      ),
+    [trend]
+  );
+
+  const trendChartRecommendation = useMemo(
+    () => recommendSmartChart(trendSmartChartInput),
+    [trendSmartChartInput]
+  );
+
+  const trendSmartChartPayload = useMemo(
+    () => ({
+      series: trendSmartChartInput.series,
+      lineVariant: "cockpit" as const
+    }),
+    [trendSmartChartInput]
+  );
 
   const [cockpitRankingDb, setCockpitRankingDb] = useState<CockpitStoreRankingRow[] | null>(null);
   useEffect(() => {
@@ -621,10 +635,18 @@ export default function DashboardPage() {
             <CardTitle className="text-base font-medium">
               收入 / 成本 / 利润趋势（近 6 个账期）
             </CardTitle>
-            <SmartChartRecommendationBadge recommendation={trendChartRecommendation} />
           </CardHeader>
           <CardContent>
-            <CockpitTrendChart data={trend} />
+            <SmartChartRenderer
+              input={trendSmartChartInput}
+              recommendation={trendChartRecommendation}
+              payload={trendSmartChartPayload}
+              mode="preview"
+              fallback="legacy_children"
+              showRecommendation
+            >
+              <CockpitTrendChart data={trend} />
+            </SmartChartRenderer>
           </CardContent>
         </Card>
         <Card className="border border-dashed border-slate-200 bg-muted/30 shadow-sm">
