@@ -90,7 +90,7 @@ const aliases: Record<FieldKey, string[]> = {
   其他收入: ["其他收入"],
   人力成本: ["人力成本"],
   能源费用: ["能源费用"],
-  华住管理费: ["华住管理费"],
+  华住管理费: ["品牌管理费", "华住管理费"],
   客房服务成本: ["客房服务成本"],
   非客房服务成本: ["非客房服务成本"],
   原材料成本: ["原材料成本"],
@@ -123,8 +123,26 @@ function getSuggestion(reason: string, field: string) {
 
 const hotelFields: FieldKey[] = ["门店", "年份", "月份", "季度", "可售间夜数", "已售间数", "出租率", "平均房价", "RevPAR", "客房收入"];
 const financialFields: FieldKey[] = [
-  "门店","年份","月份","季度","营业收入","客房收入","餐饮收入","其他收入","人力成本","能源费用","华住管理费","客房服务成本","非客房服务成本","原材料成本","营业利润"
+  "门店",
+  "年份",
+  "月份",
+  "季度",
+  "营业收入",
+  "客房收入",
+  "餐饮收入",
+  "其他收入",
+  "人力成本",
+  "能源费用",
+  "华住管理费",
+  "客房服务成本",
+  "非客房服务成本",
+  "原材料成本",
+  "营业利润"
 ];
+
+function fieldDisplayLabel(f: FieldKey): string {
+  return f === "华住管理费" ? "品牌管理费" : f;
+}
 
 export function ActualExcelImportPanel({
   mode,
@@ -299,13 +317,56 @@ export function ActualExcelImportPanel({
 
   const downloadTemplate = () => {
     if (!window.XLSX) return;
-    const base = mode === "hotel"
-      ? [{ 门店: DEMO_EXAMPLE_STORE_DISPLAY, 年份: 2026, 月份: 4, 季度: "", 可售间夜数: 4200, 已售间数: 3600, 出租率: 0.86, 平均房价: 392, RevPAR: 337, 客房收入: 141 }]
-      : [{ 门店: DEMO_EXAMPLE_STORE_DISPLAY, 年份: 2026, 月份: 4, 季度: "", 营业收入: 178, 客房收入: 132, 餐饮收入: 25, 其他收入: 21, 人力成本: 31, 能源费用: 8, 华住管理费: 13, 客房服务成本: 14, 非客房服务成本: 11, 原材料成本: 6, 营业利润: 95 }];
-    const ws = window.XLSX.utils.json_to_sheet(base);
+    if (mode === "hotel") {
+      const base = [
+        {
+          门店: DEMO_EXAMPLE_STORE_DISPLAY,
+          年份: 2026,
+          月份: 4,
+          季度: "",
+          可售间夜数: 4200,
+          已售间数: 3600,
+          出租率: 0.86,
+          平均房价: 392,
+          RevPAR: 337,
+          客房收入: 141
+        }
+      ];
+      const ws = window.XLSX.utils.json_to_sheet(base);
+      const wb = window.XLSX.utils.book_new();
+      window.XLSX.utils.book_append_sheet(wb, ws, "实际数据");
+      window.XLSX.writeFile(wb, "酒店实际数据模板.xlsx");
+      return;
+    }
+    const demoByField: Record<FieldKey, string | number> = {
+      门店: DEMO_EXAMPLE_STORE_DISPLAY,
+      年份: 2026,
+      月份: 4,
+      季度: "",
+      营业收入: 178,
+      客房收入: 132,
+      餐饮收入: 25,
+      其他收入: 21,
+      人力成本: 31,
+      能源费用: 8,
+      华住管理费: 13,
+      客房服务成本: 14,
+      非客房服务成本: 11,
+      原材料成本: 6,
+      营业利润: 95,
+      可售间夜数: 0,
+      已售间数: 0,
+      出租率: 0,
+      平均房价: 0,
+      RevPAR: 0
+    };
+    const row = Object.fromEntries(
+      financialFields.map((f) => [fieldDisplayLabel(f), demoByField[f]])
+    ) as Record<string, string | number>;
+    const ws = window.XLSX.utils.json_to_sheet([row]);
     const wb = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(wb, ws, "实际数据");
-    window.XLSX.writeFile(wb, mode === "hotel" ? "酒店实际数据模板.xlsx" : "财务实际数据模板.xlsx");
+    window.XLSX.writeFile(wb, "财务实际数据模板.xlsx");
   };
 
   return (
@@ -352,7 +413,7 @@ export function ActualExcelImportPanel({
             {mappingExpanded && <div className="grid gap-2 md:grid-cols-3">
             {fields.map((f) => (
               <div key={f} ref={(el) => { mappingRefs.current[f] = el; }}>
-                <p className="mb-1 text-xs text-muted-foreground">{f} 列映射</p>
+                <p className="mb-1 text-xs text-muted-foreground">{fieldDisplayLabel(f)} 列映射</p>
                 <Select value={mapping[f] || "__none__"} onValueChange={(v) => setMapping((p) => ({ ...p, [f]: v === "__none__" ? "" : v }))}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>

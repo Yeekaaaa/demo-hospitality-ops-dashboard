@@ -57,7 +57,7 @@ expectType(dual, "line_dual", "multi-period actual/budget single metric → line
 const costCategories: SmartChartCategoryRow[] = [
   { id: "1", label: "人工成本", actual: 100, unit: "yuan", group: "成本类" },
   { id: "2", label: "能源费用", actual: 80, unit: "yuan", group: "成本类" },
-  { id: "3", label: "华住管理费", actual: 50, unit: "yuan", group: "成本类" },
+  { id: "3", label: "品牌管理费", actual: 50, unit: "yuan", group: "成本类" },
   { id: "4", label: "客房服务成本", actual: 40, unit: "yuan", group: "成本类" },
   { id: "5", label: "原材料成本", actual: 30, unit: "yuan", group: "成本类" }
 ];

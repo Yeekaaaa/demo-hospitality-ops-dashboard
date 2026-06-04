@@ -429,7 +429,7 @@ export const 利润表科目顺序: { key: keyof FinancialLineActual; label: str
   { key: "其他收入", label: "其他收入" },
   { key: "人力成本", label: "人力成本" },
   { key: "能源费用", label: "能源费用" },
-  { key: "华住管理费", label: "华住管理费" },
+  { key: "华住管理费", label: "品牌管理费" },
   { key: "客房服务成本", label: "客房服务成本" },
   { key: "非客房服务成本", label: "非客房服务成本" },
   { key: "原材料成本", label: "原材料成本（餐饮适用）" },

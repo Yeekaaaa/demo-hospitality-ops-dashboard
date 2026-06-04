@@ -34,7 +34,7 @@ export function isBudgetSingleStoreFilter(filter: BudgetFilter): boolean {
 
 /**
  * 预算管理页：单店 → 该店 stores.id；全部门店 → active UUID 列表。
- * 不使用「石家庄经营门店」等城市/集团聚合 id。
+ * 不使用城市/集团聚合 id 作为业务页默认范围。
  */
 export function resolveBudgetScopeForFilter(
   filter: BudgetFilter,

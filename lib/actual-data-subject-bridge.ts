@@ -119,7 +119,7 @@ export function mergeFinancialLineWithOperatingSubjects(
   const energy = subjects["能耗成本"];
   if (energy != null) next.能源费用 = energy;
 
-  const mgmt = subjects["华住管理费"];
+  const mgmt = subjects["品牌管理费"] ?? subjects["华住管理费"];
   if (mgmt != null) next.华住管理费 = mgmt;
 
   const roomSvc = subjects["客房服务成本"];
@@ -183,6 +183,7 @@ const REPORT_GROUP_BY_HEADER: Record<string, OperatingReportGroup> = {
   销售费用: "成本类",
   非客房服务成本: "成本类",
   客房服务成本: "成本类",
+  品牌管理费: "成本类",
   华住管理费: "成本类",
   房租: "成本类",
   税金及附加: "成本类",

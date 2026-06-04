@@ -53,7 +53,7 @@ export function hotelOperationsToActualDataScope(
   return hotelIds;
 }
 
-/** 餐饮运营页 → actual_data 范围（当前仅唯一在营餐饮门店，如西北赋） */
+/** 餐饮运营页 → actual_data 范围（当前仅唯一在营餐饮演示门店） */
 export function restaurantOperationsActualDataScope(
   stores: readonly StoreListItem[]
 ): ActualDataStoreScope {

@@ -107,8 +107,9 @@ export const BUDGET_SUBJECT_CATALOG: readonly BudgetSubjectDefinition[] = [
   def("总成本", G.成本, "元", "yuan", "cost", "经营成本总额。"),
   def("人力成本", G.成本, "元", "yuan", "cost", "工资、社保、奖金、临时工等。", { financialKey: "人力成本" }),
   def("能源费用", G.成本, "元", "yuan", "cost", "水、电、燃气、供暖等。", { financialKey: "能源费用" }),
-  def("华住管理费", G.成本, "元", "yuan", "cost", "加盟管理费、品牌管理费、系统相关费用等。", {
-    financialKey: "华住管理费"
+  def("品牌管理费", G.成本, "元", "yuan", "cost", "加盟管理费、品牌管理费、系统相关费用等。", {
+    financialKey: "华住管理费",
+    legacyKeys: ["华住管理费"]
   }),
   def("客房服务成本", G.成本, "元", "yuan", "cost", "布草、清洁用品、客耗品、客房维护等。", {
     financialKey: "客房服务成本"
@@ -203,7 +204,7 @@ export function subjectMatchesGroupFilter(subject: BudgetSubjectDefinition, filt
   return subject.group === g;
 }
 
-/** 泽桐-星程中山西 2026-04 示例预算值（元/%/间夜等按科目 kind） */
+/** 示例酒店 B 2026-04 演示预算值（元/%/间夜等按科目 kind） */
 export const BUDGET_SUBJECT_DEMO_VALUES: Record<string, number> = {
   总营业收入: 1800000,
   客房收入: 1320000,
@@ -232,7 +233,7 @@ export const BUDGET_SUBJECT_DEMO_VALUES: Record<string, number> = {
   总成本: 1280000,
   人力成本: 420000,
   能源费用: 140000,
-  华住管理费: 110000,
+  品牌管理费: 110000,
   客房服务成本: 180000,
   非客房服务成本: 80000,
   餐饮人工成本: 90000,

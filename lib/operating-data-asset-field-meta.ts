@@ -40,7 +40,7 @@ const CHANNEL_OTA_HELP =
   "携程、美团、飞猪、Booking 等线上平台产生的已售房晚 ÷ 总已售房晚。" + RATIO_IMPORT_HELP_TEXT;
 
 const CHANNEL_MEMBER_HELP =
-  "华住会或自有会员产生的已售房晚 ÷ 总已售房晚。" + RATIO_IMPORT_HELP_TEXT;
+  "加盟品牌或品牌平台会员产生的已售房晚 ÷ 总已售房晚。" + RATIO_IMPORT_HELP_TEXT;
 
 const CHANNEL_CORPORATE_HELP =
   "企业协议、团体协议客户产生的房晚 ÷ 总已售房晚。" + RATIO_IMPORT_HELP_TEXT;
@@ -52,7 +52,7 @@ const CHANNEL_DIRECT_HELP =
   "前台、电话、微信、私域等直接销售产生的房晚 ÷ 总已售房晚。" + RATIO_IMPORT_HELP_TEXT;
 
 const HUAZHU_MANAGEMENT_FEE_HELP =
-  "包括华住管理费、会员卡售卖上交等管理费类成本，单位为元；不得作为收入抵减，不与营业收入冲减。" +
+  "包括品牌管理费、会员卡售卖上交等管理费类成本，单位为元；不得作为收入抵减，不与营业收入冲减。" +
   YUAN_IMPORT_HELP_TEXT;
 
 /** 新模板输入列（顺序与「数据模板」表头一致，接在 9 个基础列之后） */
@@ -101,7 +101,7 @@ export const OPERATING_DATA_EXTENSION_IMPORT_COLUMNS: readonly AssetImportColumn
   { headerZh: "非客房服务成本", dbKey: "non_room_service_cost", kind: "yuan", fieldGroup: "成本结构" },
   { headerZh: "客房服务成本", dbKey: "room_service_cost", kind: "yuan", fieldGroup: "成本结构" },
   {
-    headerZh: "华住管理费",
+    headerZh: "品牌管理费",
     dbKey: "huazhu_management_fee",
     kind: "yuan",
     fieldGroup: "成本结构",
@@ -259,13 +259,13 @@ export const OPERATING_DATA_CALCULATED_FIELD_ROWS: readonly CalculatedFieldRow[]
   },
   {
     fieldGroup: "成本结构",
-    headerZh: "华住管理费占比",
-    formula: "华住管理费 ÷ 营业收入 × 100%"
+    headerZh: "品牌管理费占比",
+    formula: "品牌管理费 ÷ 营业收入 × 100%"
   },
   {
     fieldGroup: "成本结构",
-    headerZh: "华住管理费单间成本",
-    formula: "华住管理费（元）÷ 可售间夜"
+    headerZh: "品牌管理费单间成本",
+    formula: "品牌管理费（元）÷ 可售间夜"
   },
   { fieldGroup: "成本结构", headerZh: "房租占比", formula: "房租 ÷ 营业收入 × 100%" },
   {

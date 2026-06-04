@@ -40,7 +40,7 @@ export function hotelKpisFromOperatingSubjects(
     平均房价: Math.round(平均房价 * 10) / 10,
     revpar: Math.round(revpar * 10) / 10,
     客房收入,
-    华住管理费: pick(operatingSubjects, "华住管理费"),
+    华住管理费: pick(operatingSubjects, "品牌管理费", "华住管理费"),
     人力成本: pick(operatingSubjects, "人工成本", "人力成本"),
     能源费用: pick(operatingSubjects, "能耗成本", "能源费用")
   };

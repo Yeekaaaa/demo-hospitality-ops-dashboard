@@ -1,4 +1,4 @@
-# 沣庭系统数据口径冻结说明（Data Caliber Freeze）
+# 经营数据系统口径冻结说明（Data Caliber Freeze）
 
 > **状态：已冻结**  
 > 本文档为 `actual_data`、`budget_data`、预算科目、KPI 计算的**唯一权威口径**。  
@@ -47,7 +47,7 @@
 | `financial_expense` | 财务费用 | **元** |
 | `back_office_management_fee` | 后勤管理费 | **元** |
 
-- **`huazhu_management_fee`（华住管理费）**：包括华住管理费、**会员卡售卖上交**等管理费类成本；按元填报，**不得**作为收入抵减。
+- **`huazhu_management_fee`（品牌管理费）**：包括加盟品牌管理费、**会员卡售卖上交**等管理费类成本；按元填报，**不得**作为收入抵减。
 - **会员卡售卖上交**：不单独建列 `member_card_sales_remittance`，金额并入 `huazhu_management_fee`。
 - **分配后利润**：仅系统计算项，**不入库**。公式：  
   `operating_profit - staff_bonus - back_office_bonus - manager_bonus - back_office_management_fee - financial_expense + non_operating_income - non_operating_expense`  
@@ -100,7 +100,7 @@
 | **ADR** | `room_revenue / rooms_sold` | 客房收入（元）÷ 已售间夜；结果元/间夜 |
 | **RevPAR** | `room_revenue / rooms_available` | 客房收入（元）÷ 可售间夜；元/可售间夜 |
 | **综合 RevPAR** | `revenue / rooms_available` | 营业收入（元）÷ 可售间夜；扩展科目/报表场景 |
-| **单间成本** | `对应成本金额（元）/ rooms_available` | 如华住管理费单间成本、销售费用单间成本等 |
+| **单间成本** | `对应成本金额（元）/ rooms_available` | 如品牌管理费单间成本、销售费用单间成本等 |
 | **收入完成率** | `actual revenue / budget revenue` | 对应 `revenue` vs `revenue_budget`（元） |
 | **成本预算差异** | `actual cost - budget cost` | 对应 `total_cost` vs `cost_budget`（元） |
 | **利润完成率** | `actual profit / budget profit` | 对应 `profit` vs `profit_budget`（元） |
@@ -140,4 +140,4 @@
 
 ---
 
-*最后冻结范围：actual_data / budget_data 分离、六核心预算列、金额底层单位为元、上述 KPI 公式、展示层万元格式化、预算管理 canonical 科目、P0 三列 actual 扩展与华住/会员卡/分配后利润口径。*
+*最后冻结范围：actual_data / budget_data 分离、六核心预算列、金额底层单位为元、上述 KPI 公式、展示层万元格式化、预算管理 canonical 科目、P0 三列 actual 扩展与品牌管理费/会员卡/分配后利润口径。*

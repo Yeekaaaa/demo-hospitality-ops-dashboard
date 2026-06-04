@@ -68,7 +68,7 @@ export async function getStores(): Promise<StoreListItem[]> {
   return getActiveStoresIncludeAll();
 }
 
-/** Supabase stores 全表（含面馆、今源等），仅管理/排错用 */
+/** Supabase stores 全表（含停用演示门店等），仅管理/排错用 */
 export async function getStoresIncludeAllRaw(): Promise<StoreListItem[]> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     throw new Error("Supabase 环境变量未配置");
@@ -83,7 +83,7 @@ export async function getStoresIncludeAllRaw(): Promise<StoreListItem[]> {
   return mapStoresRowsRaw(data);
 }
 
-/** 默认业务页：石家庄经营门店（沐家、泽桐、雨航、西北赋） */
+/** 默认业务页：active-store-scope 内的在营演示门店 */
 export async function getActiveStoresIncludeAll(): Promise<StoreListItem[]> {
   const raw = await getStoresIncludeAllRaw();
   const active = filterActiveStores(raw);

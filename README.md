@@ -63,7 +63,7 @@ npm run start
 - **门店**：演示主数据见 `lib/store-master.ts`（示例酒店 A/B/C、示例餐厅、示例城市）。
 - **开业账期**：`lib/store-opening-periods.ts` 使用 mock id / 显示名映射；**请勿**在公开仓库提交真实 `store_id` UUID。
 
-更完整的口径说明见 [docs/data-caliber-freeze.md](docs/data-caliber-freeze.md)（内部字段名如 `华住管理费` 为历史科目键，展示层已泛化）。
+更完整的口径说明见 [docs/data-caliber-freeze.md](docs/data-caliber-freeze.md)（库列 `huazhu_management_fee` 等为历史内部键，界面与模板展示为「品牌管理费」）。
 
 ## 验收与检查脚本
 
