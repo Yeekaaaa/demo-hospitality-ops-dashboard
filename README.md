@@ -1,111 +1,374 @@
-# 示例酒店餐饮经营管理平台
+
+
+````md
+# Demo Hospitality Operations Management Platform
+
 ## Live Demo
 
-Online demo:[ https://
-demo-hospitality-ops-dashboard.vercel.app](https://demo-hospitality-ops-dashboard.vercel.app)
+Online demo: https://demo-hospitality-ops-dashboard.vercel.app
 
-面向酒店与餐饮的多门店经营数据管理后台（**Demo / Portfolio**）。仓库内公司名、门店名、人员与示例金额均为**虚构**，仅供界面与数据口径演示，不代表任何真实经营主体。
+A multi-store hospitality operations management dashboard for hotels and restaurants, built as a demo / portfolio project.
 
-## 项目说明
+All company names, store names, staff names, and sample financial figures in this repository are fictional. They are used only to demonstrate UI design, data structure, and business logic. They do not represent any real operating entity.
 
-- **定位**：企业内部经营驾驶舱原型，展示 KPI、趋势、预算对比、经营导入与智能图表推荐等能力。
-- **数据模式**：未配置 Supabase 时使用本地演示数据；配置后可在有数据时展示库内经营/预算，无数据或不可用时仍回退演示并显示数据来源提示条。
-- **语言**：默认中文（`zh-CN`）；顶栏可切换部分界面为英文。GitHub / Vercel 公开演示可在环境变量中设置 `NEXT_PUBLIC_DEFAULT_LOCALE=en-US`（首次访问、无本地偏好时生效）。
-- **金额口径**：库内与聚合计算底层单位为**元**；Dashboard、财务报表等大额展示通过 `formatWan` 等形式显示为**万元**（仅展示层 ÷ 10000）。
+---
 
-## 技术栈
+## Project Overview
 
-- [Next.js](https://nextjs.org/) 15（App Router）
-- React 19 + TypeScript
-- Tailwind CSS + Radix / shadcn 风格组件
-- [Recharts](https://recharts.org/) 图表
-- [Supabase](https://supabase.com/)（可选，浏览器端 `anon` key）
+This project is positioned as an internal business intelligence dashboard prototype for hospitality operations. It demonstrates capabilities such as KPI monitoring, trend analysis, budget comparison, operating data import, and smart chart recommendation.
 
-## 本地运行
+### Key Positioning
+
+- Internal management dashboard prototype for hotel and restaurant operations
+- Portfolio demo for business analytics, data product design, and operational reporting
+- Supports both local demo data and optional Supabase-backed data
+- Designed for multi-store, monthly operating performance analysis
+
+---
+
+## Data Mode
+
+When Supabase is not configured, the system runs with local demo data.
+
+When Supabase is configured, the system can display actual operating data and budget data from the database. If no database data is available, or if the database is unavailable, the system falls back to demo data and displays a data source banner.
+
+### Data Source Logic
+
+- No Supabase configuration: demo data mode
+- Supabase configured with available data: database mode
+- Supabase configured but no available data: fallback to demo data
+- Pages display a banner indicating whether the current data comes from real database records or demo fallback data
+
+---
+
+## Language
+
+The default language is Chinese Simplified (`zh-CN`).
+
+Some interface areas can be switched to English from the top navigation bar.
+
+For public GitHub / Vercel portfolio demos, the default language can be set through the following environment variable:
+
+```env
+NEXT_PUBLIC_DEFAULT_LOCALE=en-US
+````
+
+This takes effect on first visit or when no local language preference has been stored.
+
+### Current English Coverage
+
+The current English translation covers:
+
+* Sidebar navigation
+* Login page
+* Data source banner
+* Smart chart recommendation interface
+* Selected layout and navigation text
+
+Complex business pages such as Dashboard, Hotel Operations, Financial Reports, and Budget Management still mainly use Chinese business terminology.
+
+---
+
+## Amount Unit Logic
+
+The system uses RMB yuan as the base unit for database storage and KPI aggregation.
+
+Large financial figures on pages such as Dashboard and Financial Reports are displayed in ten-thousand yuan units through formatting helpers such as `formatWan`.
+
+In short:
+
+* Storage unit: yuan
+* Calculation unit: yuan
+* Display unit for large figures: ten-thousand yuan
+* Display conversion only happens at the presentation layer
+
+---
+
+## Tech Stack
+
+* Next.js 15, App Router
+* React 19
+* TypeScript
+* Tailwind CSS
+* Radix UI / shadcn-style components
+* Recharts
+* Supabase, optional browser-side anon key integration
+
+---
+
+## Local Development
+
+Install dependencies:
 
 ```bash
 npm install
+```
+
+Create local environment file:
+
+```bash
 cp .env.example .env.local
-# 编辑 .env.local：可留空 Supabase 项，直接以演示数据体验
+```
+
+Edit `.env.local`.
+
+Supabase variables can be left empty if you only want to run the project with demo data.
+
+Start the development server:
+
+```bash
 npm run dev
 ```
 
-浏览器访问 [http://localhost:3000](http://localhost:3000)（默认 `/login`，登录后进入 `/dashboard`）。
+Open the browser:
 
-生产构建：
+```bash
+http://localhost:3000
+```
+
+The default entry page is `/login`. After login, the system enters `/dashboard`.
+
+---
+
+## Production Build
+
+Build the project:
 
 ```bash
 npm run build
+```
+
+Start production server:
+
+```bash
 npm run start
 ```
 
-## 环境变量
+---
 
-复制 [.env.example](.env.example) 为 `.env.local`（**勿将 `.env.local` 提交到 Git**）。
+## Environment Variables
 
-| 变量 | 说明 |
-|------|------|
-| `NEXT_PUBLIC_SUPABASE_URL` | 可选。Supabase 项目 URL，占位符即可本地跑通演示。 |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | 可选。Supabase **anon** 公钥；**不要**使用 service role key。 |
-| `NEXT_PUBLIC_DEMO_MODE` | 可选预留。公开演示建议保持 `1`；当前行为以未配置 Supabase / 无数据时的演示回退为主。 |
-| `NEXT_PUBLIC_DEMO_USER_NAME` | 可选预留。顶栏演示用户显示名（未接线时以界面内置「演示用户」为准）。 |
-| `NEXT_PUBLIC_DEFAULT_LOCALE` | 可选。`zh-CN`（默认）或 `en-US`。未配置或非法值时回退 `zh-CN`。中文业务部署保持默认即可；Vercel Portfolio 演示建议 `en-US`。顶栏手动切换会写入 `localStorage['fengtin-locale']` 与 `fengtin-locale-default-snapshot`（部署时的 env 默认语言）；仅当 snapshot 与当前 env 一致时，才沿用用户上次选择。 |
+Copy `.env.example` to `.env.local`.
 
-不配置 Supabase 时，各页以 mock / 演示数据运行，页面顶部会提示「演示数据」。
+Do not commit `.env.local` to Git.
 
-### 语言与英文覆盖范围
+| Variable                        | Description                                                                                                                                                                |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Optional. Supabase project URL. Can be left empty for demo mode.                                                                                                           |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional. Supabase anon public key. Do not use a service role key.                                                                                                         |
+| `NEXT_PUBLIC_DEMO_MODE`         | Optional reserved variable. Public demo deployments are recommended to keep this as `1`. Current behavior mainly depends on Supabase availability and demo fallback logic. |
+| `NEXT_PUBLIC_DEMO_USER_NAME`    | Optional reserved variable. Demo user display name. If not wired, the interface uses the built-in demo user name.                                                          |
+| `NEXT_PUBLIC_DEFAULT_LOCALE`    | Optional. Supports `zh-CN` or `en-US`. Defaults to `zh-CN` when unset or invalid. For public Vercel portfolio demos, `en-US` is recommended.                               |
 
-- **中文业务系统**：不设置 `NEXT_PUBLIC_DEFAULT_LOCALE`，或设为 `zh-CN`。
-- **公开演示（如 Vercel）**：在 Project → Environment Variables 添加 `NEXT_PUBLIC_DEFAULT_LOCALE` = `en-US`，重新部署后生效。
-- **优先级**：若 `fengtin-locale-default-snapshot` 与当前 `NEXT_PUBLIC_DEFAULT_LOCALE` 不一致（含首次访问、env 变更、旧缓存无 snapshot），使用 env 默认并刷新 snapshot；否则使用 `fengtin-locale`（顶栏手动切换）；env 未配置时回退 `zh-CN`。
-- **当前英文文案范围**：侧栏、登录、数据来源 Banner、智能图表推荐等；驾驶舱、运营、财务报表、预算等复杂业务页仍以中文为主。
+---
 
-## 主要功能（演示范围）
+## Language Configuration
 
-- 经营驾驶舱、酒店运营、餐饮运营、财务报表、预算管理、经营数据模板导入
-- 实际数据（`actual_data`）与预算数据（`budget_data`）分离；经营数据按月账期导入
-- 数据来源 Banner：区分真实经营/预算与演示回退
-- Smart Chart：规则推荐图表类型（不替代现有图表控件时可显示推荐徽章 / 预览说明）
-- 部分菜单页为高保真静态占位，可持续扩展
+For Chinese business deployment:
 
-## 数据口径摘要
+```env
+NEXT_PUBLIC_DEFAULT_LOCALE=zh-CN
+```
 
-- **金额**：存储与 KPI 聚合为**元**；前端大额常用万元展示。
-- **账期**：经营导入以月度为主，与 Excel 模板 `month` + `YYYY-MM` 一致。
-- **门店**：演示主数据见 `lib/store-master.ts`（示例酒店 A/B/C、示例餐厅、示例城市）。
-- **开业账期**：`lib/store-opening-periods.ts` 使用 mock id / 显示名映射；**请勿**在公开仓库提交真实 `store_id` UUID。
+Or leave it unset.
 
-更完整的口径说明见 [docs/data-caliber-freeze.md](docs/data-caliber-freeze.md)（库列 `huazhu_management_fee` 等为历史内部键，界面与模板展示为「品牌管理费」）。
+For public English portfolio demo:
 
-## 验收与检查脚本
+```env
+NEXT_PUBLIC_DEFAULT_LOCALE=en-US
+```
+
+After changing the environment variable in Vercel, redeploy the project.
+
+### Locale Priority
+
+The project uses the following language priority logic:
+
+1. If `fengtin-locale-default-snapshot` does not match the current `NEXT_PUBLIC_DEFAULT_LOCALE`, use the environment default and refresh the snapshot.
+2. If the snapshot matches the current environment default, use the user’s previous manual selection stored in `localStorage['fengtin-locale']`.
+3. If no environment value is provided, fall back to `zh-CN`.
+
+This prevents old browser cache from overriding the intended default language after deployment changes.
+
+---
+
+## Main Features
+
+The current demo includes:
+
+* Executive Dashboard
+* Hotel Operations
+* Restaurant Operations
+* Financial Reports
+* Budget Management
+* Operating Data Template Import
+* Monthly actual operating data management
+* Budget data management
+* Data source banner
+* Demo data fallback
+* Smart Chart recommendation
+* High-fidelity static placeholder pages for future extension
+
+---
+
+## Business Data Structure
+
+### Actual Data and Budget Data
+
+Actual operating data and budget data are separated.
+
+* Actual data: `actual_data`
+* Budget data: `budget_data`
+
+Operating data is imported by monthly accounting period.
+
+### Accounting Period
+
+The import template follows a monthly period format:
+
+```text
+month + YYYY-MM
+```
+
+The system only records monthly operating periods. It does not require annual summary rows.
+
+### Store Master Data
+
+Demo store master data is defined in:
+
+```text
+lib/store-master.ts
+```
+
+It uses fictional stores, including:
+
+* Demo Hotel A
+* Demo Hotel B
+* Demo Hotel C
+* Demo Restaurant
+* Demo City
+
+### Store Opening Periods
+
+Store opening periods are defined in:
+
+```text
+lib/store-opening-periods.ts
+```
+
+The file uses mock IDs and display-name mapping.
+
+Do not commit real store UUIDs or real production identifiers to the public repository.
+
+---
+
+## Data Caliber Summary
+
+The key data caliber rules are:
+
+* Amounts are stored and aggregated in yuan.
+* Large financial values are displayed in ten-thousand yuan at the presentation layer.
+* Monthly operating data is imported by accounting period.
+* Actual data and budget data are managed separately.
+* Store trend analysis should start from each store’s opening period.
+* Public repositories must not contain real store names, real financial data, or production database UUIDs.
+* Historical internal database keys such as `huazhu_management_fee` may remain in schema definitions, but the interface and templates display the business-facing term “Brand Management Fee”.
+
+For more detailed rules, see:
+
+```text
+docs/data-caliber-freeze.md
+```
+
+---
+
+## Validation and Check Scripts
+
+Run production build:
 
 ```bash
 npm run build
+```
+
+Run lint check:
+
+```bash
 npm run lint
+```
+
+Run acceptance check:
+
+```bash
 npx tsx scripts/acceptance-check.ts
+```
+
+Run i18n dictionary check:
+
+```bash
 npx tsx scripts/i18n-dictionary-check.ts
+```
+
+Run Smart Chart recommendation check:
+
+```bash
 npx tsx scripts/smart-chart-recommend-check.ts
+```
+
+Run Smart Chart renderer check:
+
+```bash
 npx tsx scripts/smart-chart-renderer-check.ts
 ```
 
-## 安全与公开仓库须知
+---
 
-- **不要**提交 `.env.local`、真实 Supabase URL、真实 anon key 或 **service role** key。
-- **不要**在 Issue / PR 中粘贴真实门店、真实财务数据或生产库 UUID。
-- `sql/` 与 `supabase/migrations/` 仅含表结构 DDL，不含真实 seed 数据。
-- `.agents/`、`.cursor/` 等为本地 Agent 配置，**未纳入**本仓库业务发布范围。
+## Security Notes for Public Repository
 
-## 仓库结构（简）
+Do not commit:
+
+* `.env.local`
+* Real Supabase URL
+* Real Supabase anon key
+* Supabase service role key
+* Real store names
+* Real staff names
+* Real financial data
+* Production database UUIDs
+
+The following directories are intended for local agent or development workflows and are not part of the business release scope:
 
 ```text
-app/                 # 页面与路由（登录 + 后台）
-components/          # UI、布局、图表、数据来源 Banner
-lib/                 # 业务规则、mock、i18n、Smart Chart、门店主数据
-contexts/            # 门店账期、Supabase 数据上下文等
-scripts/             # 验收与规则检查脚本
-supabase/migrations/ # 可选自托管时的 schema 迁移
+.agents/
+.cursor/
 ```
 
-## 许可证与用途
+The SQL and migration files only contain schema definitions. They do not contain real seed data.
 
-本项目用于技术展示与学习。fork 或演示时请保持虚构命名，勿替换为真实客户信息后再公开。
+```text
+sql/
+supabase/migrations/
+```
+
+---
+
+## Repository Structure
+
+```text
+app/                 # Pages and routes, including login and dashboard pages
+components/          # UI components, layout, charts, and data source banner
+lib/                 # Business rules, mock data, i18n, Smart Chart logic, and store master data
+contexts/            # Store period context and Supabase data contexts
+scripts/             # Validation and rule-checking scripts
+supabase/migrations/ # Optional schema migrations for self-hosted Supabase setup
+```
+
+---
+
+## License and Usage
+
+This project is intended for technical demonstration, learning, and portfolio use.
+
+If you fork or present this project publicly, please keep all names and data fictional. Do not replace demo content with real client or business information in a public repository.
+
+```
+```
