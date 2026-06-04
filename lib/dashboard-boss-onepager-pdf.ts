@@ -216,7 +216,7 @@ function buildHtml(input: BossOnePagerInput): string {
     .map((r) => `<tr><td>${esc(r.k)}</td><td class="num" style="text-align:left">${esc(r.v)}</td></tr>`)
     .join("");
 
-  const docTitle = `沣庭经营驾驶舱-老板一页纸-${periodLabel.replace(/\s/g, "")}`;
+  const docTitle = `示例经营驾驶舱-管理层简报-${periodLabel.replace(/\s/g, "")}`;
 
   return `<!DOCTYPE html>
 <html lang="zh-CN">
@@ -329,7 +329,7 @@ function buildHtml(input: BossOnePagerInput): string {
 <body>
   <div class="masthead">
     <h1>经营驾驶舱 · 老板一页纸</h1>
-    <div class="sub">河北沣庭酒店餐饮经营管理平台 · 管理层简报 · 内部资料</div>
+    <div class="sub">示例酒店餐饮经营管理平台 · 管理层简报 · 演示资料</div>
   </div>
   <div class="meta-bar">
     <span><strong>账期</strong>：${esc(periodLabel)}</span>

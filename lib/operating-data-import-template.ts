@@ -129,7 +129,7 @@ function buildDescriptionSheetModel(): { rows: string[][]; merges: Range[] } {
     "基础信息",
     "门店",
     "store_id（解析后）",
-    "填写系统中的门店名称，如：沐家-全季槐安西；系统会自动匹配门店。不要填写简称或错别字。",
+    "填写系统中的门店名称，如：示例酒店 A-核心店；系统会自动匹配门店。不要填写简称或错别字。",
     "文本"
   ]);
   rows.push([

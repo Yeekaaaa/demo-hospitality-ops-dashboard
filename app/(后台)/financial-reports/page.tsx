@@ -629,7 +629,7 @@ export default function FinancialReportsPage() {
       return;
     }
     const overview = [
-      { 项目: "报表标题", 值: "河北沣庭酒店餐饮经营管理平台 - 财务报表" },
+      { 项目: "报表标题", 值: "示例酒店餐饮经营管理平台 - 示例经营财务报表" },
       { 项目: "当前视图", 值: viewLabel },
       { 项目: "账期", 值: periodLabel },
       { 项目: "导出时间", 值: exportAt },
@@ -794,7 +794,7 @@ export default function FinancialReportsPage() {
       });
       x.utils.book_append_sheet(wb, detailWs, "分门店明细");
     }
-    x.writeFile(wb, "财务报表导出.xlsx");
+    x.writeFile(wb, "示例经营财务报表导出.xlsx");
   };
 
   const exportPdf = () => {
@@ -804,13 +804,13 @@ export default function FinancialReportsPage() {
       .map(({ key, label }) => `<tr><td>${label}</td><td>${fmt(key, variance.实际[key])}</td><td>${fmt(key, variance.预算[key])}</td><td>${fmt(key, variance.差异[key])}</td><td>${formatPct(variance.差异率[key])}</td></tr>`)
       .join("");
     win.document.write(`
-      <html><head><title>财务报表</title>
+      <html><head><title>示例经营财务报表</title>
       <style>
         body{font-family:Arial,"PingFang SC";padding:20px;color:#0f172a}
         h1{font-size:22px;margin:0 0 8px} .meta{font-size:12px;color:#475569;margin-bottom:10px}
         table{width:100%;border-collapse:collapse;font-size:12px} th,td{border:1px solid #cbd5e1;padding:6px;text-align:left}
       </style></head><body>
-      <h1>河北沣庭酒店餐饮经营管理平台 - 财务报表</h1>
+      <h1>示例酒店餐饮经营管理平台 - 示例经营财务报表</h1>
       <div class="meta">视图：${viewLabel} ｜ 账期：${periodLabel} ｜ 导出时间：${exportAt}</div>
       <div class="meta">KPI：营业收入 ${formatWan(actual.营业收入)}，营业利润 ${formatWan(actual.营业利润)}，利润率 ${formatPct(actual.利润率)}</div>
       <table><thead><tr><th>科目</th><th>实际</th><th>预算</th><th>差异</th><th>差异率</th></tr></thead><tbody>${rows}</tbody></table>

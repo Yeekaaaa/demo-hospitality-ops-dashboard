@@ -37,8 +37,8 @@ export function buildBudgetTemplateExampleRows(opts?: {
   quarter?: string;
 }): Array<Record<string, string | number>> {
   const active = filterActiveMockStores();
-  const zetong = active.find((s) => s.品牌.includes("泽桐")) ?? active[0];
-  const store = opts?.storeName ?? (zetong ? storeLabel(zetong) : getDefaultExampleStoreLabel());
+  const hotelB = active.find((s) => s.品牌.includes("示例酒店 B")) ?? active[0];
+  const store = opts?.storeName ?? (hotelB ? storeLabel(hotelB) : getDefaultExampleStoreLabel());
   const year = opts?.year ?? 2026;
   const month = opts?.month ?? 4;
   const quarter = opts?.quarter ?? "Q2";
@@ -62,7 +62,14 @@ function buildDescriptionRows(): string[][] {
   const rows: string[][] = [header];
   const versionLabel = getBudgetVersionLabel("base");
 
-  rows.push(["表头字段", "门店", "必填", "文本", "与系统门店主数据一致，如：沐家-全季槐安西、西北赋。", "泽桐-星程中山西"]);
+  rows.push([
+    "表头字段",
+    "门店",
+    "必填",
+    "文本",
+    "与系统门店主数据一致，如：示例酒店 A-核心店、示例餐厅。",
+    "示例酒店 B-商务店"
+  ]);
   rows.push(["表头字段", "年份", "必填", "四位数字", "如 2026。", "2026"]);
   rows.push(["表头字段", "月份", "必填*", "1-12", "月度预算填 1-12；若按季度汇总可留空月份并填季度。", "4"]);
   rows.push(["表头字段", "季度", "选填", "Q1-Q4", "可填 Q1、Q2、Q3、Q4；与月份二选一为主。", "Q2"]);

@@ -16,6 +16,9 @@ import {
 import type { ReportPeriod } from "@/lib/mock-analytics";
 import { 全部门店值, 门店主数据 } from "@/lib/store-master";
 
+/** 旧面板模板/纠错示例用门店（与 store-master 演示主数据一致） */
+const DEMO_EXAMPLE_STORE_DISPLAY = "示例酒店 A｜核心店｜示例城市";
+
 declare global {
   interface Window {
     XLSX?: {
@@ -108,7 +111,7 @@ function findStoreId(nameRaw: string): string | null {
 }
 
 function getSuggestion(reason: string, field: string) {
-  if (reason.includes("门店名称无法识别")) return "请改为：沐家｜全季槐安西｜石家庄";
+  if (reason.includes("门店名称无法识别")) return `请改为：${DEMO_EXAMPLE_STORE_DISPLAY}`;
   if (reason.includes("年份为空")) return "请填写 2026";
   if (reason.includes("年份格式异常")) return "请填写数字年份，例如 2026";
   if (reason.includes("月份 / 季度为空")) return "请至少填写月份或季度其中一项";
@@ -297,8 +300,8 @@ export function ActualExcelImportPanel({
   const downloadTemplate = () => {
     if (!window.XLSX) return;
     const base = mode === "hotel"
-      ? [{ 门店: "沐家｜全季槐安西｜石家庄", 年份: 2026, 月份: 4, 季度: "", 可售间夜数: 4200, 已售间数: 3600, 出租率: 0.86, 平均房价: 392, RevPAR: 337, 客房收入: 141 }]
-      : [{ 门店: "沐家｜全季槐安西｜石家庄", 年份: 2026, 月份: 4, 季度: "", 营业收入: 178, 客房收入: 132, 餐饮收入: 25, 其他收入: 21, 人力成本: 31, 能源费用: 8, 华住管理费: 13, 客房服务成本: 14, 非客房服务成本: 11, 原材料成本: 6, 营业利润: 95 }];
+      ? [{ 门店: DEMO_EXAMPLE_STORE_DISPLAY, 年份: 2026, 月份: 4, 季度: "", 可售间夜数: 4200, 已售间数: 3600, 出租率: 0.86, 平均房价: 392, RevPAR: 337, 客房收入: 141 }]
+      : [{ 门店: DEMO_EXAMPLE_STORE_DISPLAY, 年份: 2026, 月份: 4, 季度: "", 营业收入: 178, 客房收入: 132, 餐饮收入: 25, 其他收入: 21, 人力成本: 31, 能源费用: 8, 华住管理费: 13, 客房服务成本: 14, 非客房服务成本: 11, 原材料成本: 6, 营业利润: 95 }];
     const ws = window.XLSX.utils.json_to_sheet(base);
     const wb = window.XLSX.utils.book_new();
     window.XLSX.utils.book_append_sheet(wb, ws, "实际数据");
@@ -333,6 +336,9 @@ export function ActualExcelImportPanel({
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        <p className="rounded-md border border-amber-200/90 bg-amber-50/80 px-2.5 py-1.5 text-xs text-amber-950">
+          本面板为旧版 Excel 预览与字段映射调试，仅供临时查看；正式经营数据导入请使用「经营数据模板」页。
+        </p>
         <p className="text-xs text-muted-foreground">文件：{fileName || "未上传"}{!ready ? "（加载解析引擎中）" : ""}</p>
         {headers.length > 0 && (
           <div className="space-y-2">
