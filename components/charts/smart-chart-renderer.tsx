@@ -65,7 +65,7 @@ function formatCellNumber(value: number): string {
 function SmartChartEmptyState({ message }: { message?: string }) {
   return (
     <div className="flex min-h-[120px] items-center justify-center rounded-md border border-dashed px-4 py-6 text-sm text-muted-foreground">
-      {message ?? "暂无足够数据推荐图表"}
+      {message ?? "暂无足够数据推荐图表。"}
     </div>
   );
 }

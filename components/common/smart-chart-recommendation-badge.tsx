@@ -13,7 +13,7 @@ export function SmartChartRecommendationBadge({
 }) {
   if (recommendation.chartType === "empty") {
     return (
-      <p className="text-sm text-muted-foreground">暂无足够数据推荐图表</p>
+      <p className="text-sm text-muted-foreground">暂无足够数据推荐图表。</p>
     );
   }
 

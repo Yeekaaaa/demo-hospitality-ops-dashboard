@@ -9,7 +9,7 @@ import { BudgetImportActions } from "@/components/budget/budget-import-actions";
 import { DataSourceBanner } from "@/components/common/data-source-banner";
 import { DataQualityBanner } from "@/components/common/data-quality-banner";
 import { MetricCard } from "@/components/common/metric-card";
-import { SmartChartRecommendationBadge } from "@/components/common/smart-chart-recommendation-badge";
+import { SmartChartRenderer } from "@/components/charts/smart-chart-renderer";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -430,19 +430,34 @@ export default function FinancialReportsPage() {
     [trendData, chartMetric]
   );
 
-  const trendChartRecommendation = useMemo(() => {
+  const trendSmartChartInput = useMemo(() => {
     const rows = trendData as Array<Record<string, unknown>>;
     if (chartMode === "实际对比预算") {
-      return recommendSmartChart(
-        fromFinancialTrendRowsSingleMetric(
-          rows,
-          "financial",
-          FINANCIAL_CHART_METRIC_TO_SMART[chartMetric]
-        )
+      return fromFinancialTrendRowsSingleMetric(
+        rows,
+        "financial",
+        FINANCIAL_CHART_METRIC_TO_SMART[chartMetric]
       );
     }
-    return recommendSmartChart(fromFinancialTrendRows(rows, "financial"));
+    return fromFinancialTrendRows(rows, "financial");
   }, [trendData, chartMode, chartMetric]);
+
+  const trendChartRecommendation = useMemo(
+    () => recommendSmartChart(trendSmartChartInput),
+    [trendSmartChartInput]
+  );
+
+  const trendSmartChartPayload = useMemo(
+    () => ({
+      series: trendSmartChartInput.series,
+      financial: {
+        rows: trendData as Array<Record<string, unknown>>,
+        mode: chartMode,
+        metric: chartMetric
+      }
+    }),
+    [trendSmartChartInput, trendData, chartMode, chartMetric]
+  );
 
   const operatingVariance = useMemo(() => {
     const full = buildFullBudgetVariance(
@@ -1160,9 +1175,8 @@ export default function FinancialReportsPage() {
       <Card className="border-slate-200 shadow-sm">
         <CardHeader className="flex flex-col gap-3 pb-2">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0 flex-1 space-y-2">
+            <div className="min-w-0 flex-1">
               <CardTitle className="text-base font-medium">收入 / 成本 / 利润趋势</CardTitle>
-              <SmartChartRecommendationBadge recommendation={trendChartRecommendation} />
             </div>
             <div className="flex flex-shrink-0 flex-wrap gap-2">
             <Select value={chartMode} onValueChange={(v) => setChartMode(v as TrendChartMode)}>
@@ -1176,9 +1190,18 @@ export default function FinancialReportsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <DataQualityBanner issues={qualityIssues} />
-          <FinancialTrendChart data={trendData} mode={chartMode} metric={chartMetric} />
+          <SmartChartRenderer
+            input={trendSmartChartInput}
+            recommendation={trendChartRecommendation}
+            payload={trendSmartChartPayload}
+            mode="preview"
+            fallback="legacy_children"
+            showRecommendation
+          >
+            <FinancialTrendChart data={trendData} mode={chartMode} metric={chartMetric} />
+          </SmartChartRenderer>
         </CardContent>
       </Card>
 
